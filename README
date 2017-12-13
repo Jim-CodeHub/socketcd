@@ -1,8 +1,9 @@
 1. Introduction:
 
-    xSocketd is a series of server-side TCP/IP functions whit C language.
-    x reference param PPC/TPC/SELECT_TPC/POLL_TPC/EPOLL_TPC which define in structure 'emum xway'
-
+    xSocketd is a series of server-side socket functions whit C language.
+    x reference SOCK_STREAM（usable）/SOCK_DGREAM（developing）/SOCK_RAW（developing）
+    
+    for SOCK_STREAM， there is several choice which define in structure 'emum xway'
     enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC};
     PPC -> process per connection or multi process
     TPC -> thread per connection or multi thread
