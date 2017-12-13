@@ -4,7 +4,7 @@
     x reference SOCK_STREAM（usable）/SOCK_DGREAM（developing）/SOCK_RAW（developing）
     
     for SOCK_STREAM， there is several choice which define in structure 'emum xway'
-    enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC};
+    enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC，...};
     PPC -> process per connection or multi process
     TPC -> thread per connection or multi thread
     SELECT_TPC -> select with multi thread 
@@ -36,10 +36,10 @@
 
 4. Choice
 
-    There are five ways to start xSocketd that define in xway:
-        enum xway{MULTI_PROCESS, MULTI_THREAD, SELECT, POLL, EPOLL};
+    There are five ways to start xSocketd with SOCK_STREAM that define in xway:
+        enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC，...};
 
-    Some suggestions:
+    Some suggestions for SOCK_STREAM:
    ------------------------------------
    | clients | access time |  choice  |
    ------------------------------------
