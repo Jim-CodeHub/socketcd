@@ -1,15 +1,16 @@
 1. Introduction:
 
     xSocketd is a series of server-side socket functions whit C language.
-    x reference SOCK_STREAM（usable）/SOCK_DGREAM（developing）/SOCK_RAW（developing）
-    
-    for SOCK_STREAM， there is several choice which define in structure 'emum xway'
-    enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC，...};
-    PPC -> process per connection or multi process
-    TPC -> thread per connection or multi thread
-    SELECT_TPC -> select with multi thread 
-    POLL_TPC -> poll with multi thread
-    EPOLL_TPC -> epoll with multi thread
+    x reference choice TCP/UDP(developing)/OTHERS(developing)
+
+    For TCP/IP protocal:
+        enum xway{NONE, PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC};
+        NONE-> single server
+        PPC -> process per connection or multi process
+        TPC -> thread per connection or multi thread
+        SELECT_TPC -> select with multi thread 
+        POLL_TPC -> poll with multi thread
+        EPOLL_TPC -> epoll with multi thread
 
 2. Usage 
 
@@ -36,10 +37,11 @@
 
 4. Choice
 
-    There are five ways to start xSocketd with SOCK_STREAM that define in xway:
-        enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC，...};
+    For TCP/IP:
+    There are five ways to start xSocketd that define in xway:
+        enum xway{MULTI_PROCESS, MULTI_THREAD, SELECT, POLL, EPOLL};
 
-    Some suggestions for SOCK_STREAM:
+    Some suggestions:
    ------------------------------------
    | clients | access time |  choice  |
    ------------------------------------
@@ -92,4 +94,4 @@
     }
 
     //command line
-    #gcc main.c xSocketd.cpp -lpthead
+    #gcc main.c xsocketd.c -lpthead

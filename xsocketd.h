@@ -15,13 +15,16 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define DEBUG(x, Y, z, m, r) do{        \
     if(x Y z)                           \
     {                                   \
         perror(m);                      \
-        printf("FILE ; %s", __FILE__);  \
-        printf("LINE ; %s", __LINE__);  \
+        printf("FILE : %s\n", __FILE__);\
+        printf("LINE : %d\n", __LINE__);\
         exit(r);                        \
     }                                   \
 }while(0)
@@ -30,11 +33,11 @@
 extern "C"
 {
 #endif
-
 typedef void (*vpfun)(int cfd, struct sockaddr_in *caddr);
 void *thread_handler(void *arg);
 
-enum xway{PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC};
+enum xtype{xSOCK_STREAM, xSOCK_DGRAM, xSOCK_RAW};
+enum xway{NONE, PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC};
 
 struct param_s 
 {
@@ -54,10 +57,11 @@ struct thread_arg
     vpfun msg_handler; 
 };
 
-struct param_s xsocketd_init(int type, in_port_t port, const char *ipaddr, int backlog,  enum xway way, nfds_t npfd, bool daemon);
-void param_juge(int type, in_port_t port, const char *ipaddr, int backlog, enum xway way, nfds_t npfd);
+struct param_s xsocketd_init(enum xtype type, in_port_t port, const char *ipaddr, int backlog,  enum xway way, nfds_t psize, bool daemon);
+void param_juge(in_port_t port, const char *ipaddr, int backlog, enum xway way, nfds_t npfd);
 void xsocketd_start(const struct param_s *param, vpfun msg_handler);
 
+void none(int sfd, vpfun msg_handler);                      //single
 void ppc(int sfd, vpfun msg_handler);                       //multi process 
 void tpc(int sfd, vpfun msg_handler);                       //multi thread
 void select_tpc(int sfd, vpfun msg_handler);                //select with multi thread 

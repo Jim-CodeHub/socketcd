@@ -14,13 +14,27 @@ void *thread_handler(void *arg)
     pthread_exit(NULL);
 }
 
-struct param_s xsocketd_init(int type, in_port_t port, const char *ipaddr, int backlog,  enum xway way, nfds_t psize, bool daemon)
+struct param_s xsocketd_init(enum xtype type, in_port_t port, const char *ipaddr, int backlog,  enum xway way, nfds_t psize, bool daemon)
 {
-    param_juge(type, port, ipaddr, backlog, way, psize);
-
     struct param_s param;
+    switch(type)
+    {
+        case xSOCK_STREAM: 
+            param.type = SOCK_STREAM;
+            break;
+        case xSOCK_DGRAM:
+            param.type = SOCK_DGRAM;
+            break;
+        case xSOCK_RAW:
+            param.type = SOCK_RAW;
+            break;
+        default:
+            puts("Param type is bad!");
+    }
+
+    param_juge(port, ipaddr, backlog, way, psize);
+
     param.way = way;
-    param.type = type;
     param.port = port;
     strcpy(param.ipaddr, ipaddr);
     param.backlog = backlog;
@@ -30,14 +44,8 @@ struct param_s xsocketd_init(int type, in_port_t port, const char *ipaddr, int b
     return param;
 }
 
-void param_juge(int type, in_port_t port, const char *ipaddr, int backlog, enum xway way, nfds_t psize)
+void param_juge(in_port_t port, const char *ipaddr, int backlog, enum xway way, nfds_t psize)
 {
-    if(type != SOCK_STREAM && type != SOCK_DGRAM)
-    {
-        puts("Param type should be SOCK_STREAM or SOCK_DGRAM"); 
-        exit(-1);
-    }
-
     if(port < 0)
     {
         puts("Param port is negative"); 
@@ -54,6 +62,18 @@ void param_juge(int type, in_port_t port, const char *ipaddr, int backlog, enum 
     {
         puts("Param backlog should be positive"); 
         exit(-1);
+    }
+    else
+    {
+        int fd = open("/proc/sys/net/core/somaxconn", O_RDONLY);
+        DEBUG(fd, ==, -1, "open error ", -1);
+
+        char buff[10];
+        read(fd, buff, 10);
+        close(fd);
+
+        if(backlog < atoi(buff))
+            backlog = atoi(buff);
     }
 
     if(way == POLL_TPC && psize <= 0)
@@ -97,6 +117,9 @@ void xsocketd_start(const struct param_s *param, vpfun msg_handler)
 
         switch(param->way)
         {
+            case NONE:
+                none(sfd, msg_handler); 
+                break;
             case PPC: 
                 ppc(sfd, msg_handler);
                 break;
@@ -118,6 +141,22 @@ void xsocketd_start(const struct param_s *param, vpfun msg_handler)
     /*if(param->type == SOCK_DGRAM)*/ //<TBD>
     /*if(param->type == SOCK_RAW)*/ //<TBD>
 } 
+
+void none(int sfd, vpfun msg_handler)
+{
+    int ret, cfd;
+    socklen_t len;
+    struct sockaddr_in caddr;
+    len = sizeof(caddr);
+
+    bzero(&caddr, len);
+    cfd = accept(sfd, (struct sockaddr*)&caddr, &len);
+    DEBUG(cfd, ==, -1, "accept error ", -1);
+
+    msg_handler(cfd, &caddr);
+
+    close(cfd);
+}
 
 void ppc(int sfd, vpfun msg_handler)
 {
