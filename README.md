@@ -14,6 +14,9 @@
 
     It's hard to say, which one has a well performence for your project,so, just try them all if it's possible.
 
+## Install
+    #make && make install
+
 ## Usage 
 
 ### Init 
@@ -60,4 +63,4 @@
     }
 
     //command line
-    #gcc main.c xsocketd.c -lpthead
+    #gcc main.c -lxsocketd -lpthread
