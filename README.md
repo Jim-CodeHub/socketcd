@@ -34,7 +34,7 @@
     the behavior is implementation dependent in function msg_handler().
 
 
-##Demo 
+## Demo
     //main.c
 
     #include "xsocketd.h"
