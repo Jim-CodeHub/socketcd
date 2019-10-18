@@ -1,5 +1,136 @@
-//#include <xsocketd.h> 
-#include "xsocketd.h" 
+/**-----------------------------------------------------------------------------------------------------------------
+ * @file	socketd.c
+ * @brief	Server-side TCP/IP stack library with POSIX 1003.1g standard socket API
+ *
+ * Copyright (c) 2019-2019 Jim Zhang 303683086@qq.com
+ *------------------------------------------------------------------------------------------------------------------
+*/
+#include "Socketd.hpp" 
+
+
+/*
+--------------------------------------------------------------------------------------------------------------------
+*
+*			                                  FUNCTIONS IMPLEMENT
+*
+--------------------------------------------------------------------------------------------------------------------
+*/
+
+/**
+ *	@brief	    Create TCP/IP socket 
+ *	@param[in]  _P	- TCP/IP stack protocol 
+ *	@param[out] None
+ *	@return		None
+ **/
+socketd_server::socketd_server(enum TCP_IP_STACK _P = TCPv4)
+{
+	int domain, type, protocol;
+
+	switch (_P)
+	{
+		case TCPv4:
+			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET			;
+			type     = LIBSOCKET_TYPE_POSIX1_SOCK_STREAM		; 
+			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_TCP	; 
+			break;
+		case TCPv6:
+			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET6			;
+			type     = LIBSOCKET_TYPE_POSIX1_SOCK_STREAM		; 
+			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_TCP	; 
+			break;
+		case UDPv4:
+			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET			;
+			type     = LIBSOCKET_TYPE_POSIX1_SOCK_DGRAM			; 
+			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_UDP	; 
+			break;
+		case UDPv6:
+			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET6			;
+			type     = LIBSOCKET_TYPE_POSIX1_SOCK_DGRAM			; 
+			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_UDP	; 
+			break;
+		default: ;
+	}
+
+	socketfd = socket(domain, type, protocol);
+
+	if (-1 == socketfd) {throw "Socket create failure";}
+}
+
+/**
+ *	@brief	    Set TCP/IP socket options
+ *	@param[in]  level	-	LIBSOCKET_LEVEL_XXX 
+ *	@param[in]  option  -	LIBSOCKET_OPT_XXX
+ *	@param[in]  _switch -	true/false
+ *	@param[out] None
+ *	@return		None
+ *	@note		The function suitable the option which value is bool 
+ **/
+void socketd_server::set_socket_opt(int level, int option, bool _switch)
+{
+	int ret = 0, optval = _switch;
+
+	ret = setsockopt(socketfd, level, option, &optval, sizeof(optval));
+
+	if (-1 == ret) {throw "Socket option set failure";}
+
+	return;
+}
+
+/**
+ *	@brief	    Set TCP/IP socket options
+ *	@param[in]  level	-	LIBSOCKET_LEVEL_XXX 
+ *	@param[in]  option  -	LIBSOCKET_OPT_XXX
+ *	@param[in]  optval	-   option value	_
+ *	@param[in]  optlen	-   option value length	_
+ *	@param[out] None
+ *	@return		None
+ *	@note		The function suitable the option which value is structure 
+ **/
+void socketd_server::set_socket_opt(int level, int option, void *optval, socklen_t optlen)
+{
+	int ret = 0;
+
+	ret = setsockopt(socketfd, level, option, optval, optlen);
+
+	if (-1 == ret) {throw "Socket option set failure";}
+
+	return;
+}
+
+/**
+ *	@brief	    Set TCP/IP socket deamon 
+ *	@param[in]  message - true/false 
+ *	@param[out] None
+ *	@return		None
+ *	@note	    If param message is false, exception message will still work on currunt terminal	
+ *				, which is helpful for debugging
+ **/
+void socketd_server::set_deamon(bool message)
+{
+	int ret = 0;
+
+	ret = daemon(0, meesage);
+
+	if (-1 == ret) {throw "Socket deamon set failure";}
+
+	return;
+}
+
+/**
+ *	@brief	    Initial socket server 
+ *	@param[in]  method	-  BLOCK/PPC/TPC/SELECT_TPC/POLL_TPC/EPOLL_TPC 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::server_init(enum method m, const char *ip, in_port_t port, int backlog=128)
+{
+
+	return;
+}
+
+
+
+
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -14,76 +145,8 @@ void *thread_handler(void *arg)
     pthread_exit(NULL);
 }
 
-struct param_s xsocketd_init(enum xtype type, in_port_t port, const char *ipaddr, int backlog,  enum xway way, nfds_t psize, bool daemon)
-{
-    struct param_s param;
-    switch(type)
-    {
-        case xSOCK_STREAM: 
-            param.type = SOCK_STREAM;
-            break;
-        case xSOCK_DGRAM:
-            param.type = SOCK_DGRAM;
-            break;
-        case xSOCK_RAW:
-            param.type = SOCK_RAW;
-            break;
-        default:
-            puts("Param type is bad!");
-    }
 
-    param_juge(port, ipaddr, backlog, way, psize);
-
-    param.way = way;
-    param.port = port;
-    strcpy(param.ipaddr, ipaddr);
-    param.backlog = backlog;
-    param.daemon = daemon;
-    param.psize = psize;
-
-    return param;
-}
-
-void param_juge(in_port_t port, const char *ipaddr, int backlog, enum xway way, nfds_t psize)
-{
-    if(port < 0)
-    {
-        puts("Param port is negative"); 
-        exit(-1);
-    }
-
-    if(NULL == ipaddr)
-    {
-        puts("Param addr is null"); 
-        exit(-1);
-    }
-
-    if(backlog <= 0)
-    {
-        puts("Param backlog should be positive"); 
-        exit(-1);
-    }
-    else
-    {
-        int fd = open("/proc/sys/net/core/somaxconn", O_RDONLY);
-        DEBUG(fd, ==, -1, "open error ", -1);
-
-        char buff[10];
-        read(fd, buff, 10);
-        close(fd);
-
-        if(backlog < atoi(buff))
-            backlog = atoi(buff);
-    }
-
-    if(way == POLL_TPC && psize <= 0)
-    {
-        puts("Param way has been set POLL, param pize should be positive"); 
-        exit(-1);
-    }
-}
-
-void xsocketd_start(const struct param_s *param, vpfun msg_handler)
+void libSocket_start(const struct param_s *param, vpfun msg_handler)
 {
     int ret = 0;
     int opt = 1;
@@ -94,6 +157,7 @@ void xsocketd_start(const struct param_s *param, vpfun msg_handler)
     saddr.sin_port = htons(param->port);
     saddr.sin_addr.s_addr = inet_addr(param->ipaddr);
     bzero(saddr.sin_zero, sizeof(saddr.sin_zero));
+
 
     if(param->daemon == true)
     {
