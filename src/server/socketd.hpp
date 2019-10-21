@@ -45,13 +45,14 @@ namespace NS_LIBSOCKET{
 */
 
 
-
 /*-----------------------------------------------------------------------------------------------------------------
  * 
  *										   SOCKETD DATA BLOCK
  *
  *-----------------------------------------------------------------------------------------------------------------
 */
+
+typedef void (*CGI_T)(int cfd, const struct sockaddr_in *caddr);
 
 /**
  *	@brief Socket server implement method 
@@ -79,13 +80,10 @@ class socketd_server{
 		void set_socket_opt(int level, int option, bool _switch);
 		void set_socket_opt(int level, int option, void *optval, socklen_t optlen);
 
-		void set_socket_cgi(void (*)(int cfd, const struct sockaddr_in *caddr));
-
 		void set_deamon(bool message);
 
 	protected:
 		int socketfd;
-		void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr);
 };
 
 /**
@@ -95,18 +93,18 @@ class socketd_tcp_v4 : public socketd_server{
 	public:
 		socketd_tcp_v4(void):socketd_server(TCPv4){};
 
-		void server_init(const char *ip, in_port_t port, int backlog=128, nfds_t nfds=128);
-		void server_emit(enum method m);
-		void server_over(void);
+		void server_init(const char *ip, in_port_t port, CGI_T msg_cgi  );
+		void server_emit(enum method m, int backlog=128, nfds_t nfds=128);
+		//void server_over(void);
 
 		static pthread_mutex_t mutex;
 		static void *thread_hook(void *arg);
 
 	private:
 		struct sockaddr_in saddr;
-		int				   backlog;
 		nfds_t			   nfds;
 		enum method		   m;
+		CGI_T			   msg_cgi;
 
 		void block		(void); /**< Blocking TCP/IP socket server				   */
 		void ppc		(void); /**< Multi process TCP/IP socket server			   */
@@ -115,8 +113,6 @@ class socketd_tcp_v4 : public socketd_server{
 		void poll_tpc   (void); /**< Poll with multi thread TCP/IP socket server   */
 		void epoll_tpc	(void); /**< Epoll with multi thread TCP/IP socket server  */
 };
-
-pthread_mutex_t socketd_tcp_v4::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 } /*< NS_LIBSOCKET */

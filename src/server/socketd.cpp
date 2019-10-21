@@ -7,7 +7,17 @@
 */
 #include "socketd.hpp" 
 
+
 using namespace NS_LIBSOCKET;
+
+/*
+--------------------------------------------------------------------------------------------------------------------
+*
+*			                                  FUNCTIONS PROTOTYPES
+*
+--------------------------------------------------------------------------------------------------------------------
+*/
+pthread_mutex_t socketd_tcp_v4::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 /*
@@ -100,19 +110,6 @@ void socketd_server::set_socket_opt(int level, int option, void *optval, socklen
 }
 
 /**
- *	@brief	    Set TCP/IP socket CGI 
- *	@param[in]  msg_cgi	- User's CGI handler 
- *	@param[out] None
- *	@return		None
- **/
-void socketd_server::set_socket_cgi(void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr))
-{
-	this->msg_cgi = msg_cgi;
-
-	return;
-}
-
-/**
  *	@brief	    Set TCP/IP socket deamon 
  *	@param[in]  message - true/false 
  *	@param[out] None
@@ -141,13 +138,10 @@ void socketd_server::set_deamon(bool message)
  *	@brief	    Initial socket server 
  *	@param[in]  ip 
  *	@param[in]  port	- Application layer protocol port 
- *	@param[in]  backlog	- Size of listen queue 
- *	@param[in]  nfds	- Number of poll/epoll structure 
  *	@param[out] None
  *	@return		None
- *	@note		Param nfds onley works when using method POLL/EPOLL 
  **/
-void socketd_tcp_v4::server_init(const char *ip, in_port_t port, int backlog, nfds_t nfds)
+void socketd_tcp_v4::server_init(const char *ip, in_port_t port, CGI_T msg_cgi)
 {
 	int ret = 0, opt = 1;
 
@@ -162,8 +156,7 @@ void socketd_tcp_v4::server_init(const char *ip, in_port_t port, int backlog, nf
 
 	if (-1 == ret) {throw "Socket server init failure";}
 
-	this->nfds	  = nfds;
-	this->backlog = backlog;
+	this->msg_cgi = msg_cgi;
 
 	return;
 }
@@ -171,16 +164,21 @@ void socketd_tcp_v4::server_init(const char *ip, in_port_t port, int backlog, nf
 /**
  *	@brief	    Initial socket server 
  *	@param[in]  method	-  BLOCK/PPC/TPC/SELECT_TPC/POLL_TPC/EPOLL_TPC 
+ *	@param[in]  backlog	- Size of listen queue 
+ *	@param[in]  nfds	- Number of poll/epoll structure 
  *	@param[out] None
  *	@return		None
+ *	@note		Param nfds onley works when using method POLL/EPOLL 
  **/
-void socketd_tcp_v4::server_emit(enum method m)
+void socketd_tcp_v4::server_emit(enum method m, int backlog, nfds_t nfds)
 {
 	int ret = 0;
 
 	ret = listen(socketfd, backlog); 
 
 	if (-1 == ret) {throw "Socket server emit failure";}
+
+	this->nfds = nfds; /**< Only for xPOLL */
 
 	switch(m)
 	{
