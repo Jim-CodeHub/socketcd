@@ -31,7 +31,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <csignal>
-#include "../socket.h"
+#include "../socket.hpp"
 
 
 namespace NS_LIBSOCKET{
@@ -54,14 +54,23 @@ namespace NS_LIBSOCKET{
 */
 
 /**
- *	@brief socket server implement method 
+ *	@brief Socket server implement method 
  **/
 enum method{
 	BLOCK, PPC, TPC, SELECT_TPC, POLL_TPC, EPOLL_TPC	
 }; 
 
 /**
- *	@brief socket server base class 
+ *	@brief Socket server arguments of TPCs
+ **/
+struct thread_args{
+	void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr);
+    int cfd;
+    struct sockaddr_in caddr;
+};
+
+/**
+ *	@brief Socket server foundational class 
  **/
 class socketd_server{
 	public:
@@ -70,10 +79,13 @@ class socketd_server{
 		void set_socket_opt(int level, int option, bool _switch);
 		void set_socket_opt(int level, int option, void *optval, socklen_t optlen);
 
+		void set_socket_cgi(void (*)(int cfd, const struct sockaddr_in *caddr));
+
 		void set_deamon(bool message);
 
 	protected:
 		int socketfd;
+		void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr);
 };
 
 /**
@@ -83,48 +95,28 @@ class socketd_tcp_v4 : public socketd_server{
 	public:
 		socketd_tcp_v4(void):socketd_server(TCPv4){};
 
-		void server_init(enum method m, const char *ip, in_port_t port, int backlog=128);
-		void server_emit();
-		void server_over();
+		void server_init(const char *ip, in_port_t port, int backlog=128, nfds_t nfds=128);
+		void server_emit(enum method m);
+		void server_over(void);
+
+		static pthread_mutex_t mutex;
+		static void *thread_hook(void *arg);
 
 	private:
 		struct sockaddr_in saddr;
-		int backlog;
+		int				   backlog;
+		nfds_t			   nfds;
+		enum method		   m;
 
-		enum method m;
-
-		nfds_t psize;
-
-		void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr);
+		void block		(void); /**< Blocking TCP/IP socket server				   */
+		void ppc		(void); /**< Multi process TCP/IP socket server			   */
+		void tpc		(void); /**< Multi thread TCP/IP socket server			   */
+		void select_tpc (void); /**< Select with multi thread TCP/IP socket server */
+		void poll_tpc   (void); /**< Poll with multi thread TCP/IP socket server   */
+		void epoll_tpc	(void); /**< Epoll with multi thread TCP/IP socket server  */
 };
 
-
-void *thread_handler(void *arg);
-
-
-struct thread_arg
-{
-    int cfd;
-    struct sockaddr_in caddr;
-    vpfun msg_handler; 
-};
-
-/*-----------------------------------------------------------------------------------------------------------------
- * 
- *				    				       SOCKETD FUNCTIONS DECLARATION
- *
- *------------------------------------------------------------------------------------------------------------------
-*/
-struct param_s xsocketd_init(enum xtype type, in_port_t port, const char *ipaddr, int backlog,  enum xway way, nfds_t psize, bool daemon);
-void param_juge(in_port_t port, const char *ipaddr, int backlog, enum xway way, nfds_t npfd);
-void xsocketd_start(const struct param_s *param, vpfun msg_handler);
-
-void none(int sfd, vpfun msg_handler);                      //single
-void ppc(int sfd, vpfun msg_handler);                       //multi process 
-void tpc(int sfd, vpfun msg_handler);                       //multi thread
-void select_tpc(int sfd, vpfun msg_handler);                //select with multi thread 
-void poll_tpc(int sfd, nfds_t psize, vpfun msg_handler);    //poll with multi thread 
-void epoll_tpc(int sfd, nfds_t psize, vpfun msg_handler);   //epoll with multi thread
+pthread_mutex_t socketd_tcp_v4::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 } /*< NS_LIBSOCKET */

@@ -5,7 +5,9 @@
  * Copyright (c) 2019-2019 Jim Zhang 303683086@qq.com
  *------------------------------------------------------------------------------------------------------------------
 */
-#include "Socketd.hpp" 
+#include "socketd.hpp" 
+
+using namespace NS_LIBSOCKET;
 
 
 /*
@@ -22,7 +24,7 @@
  *	@param[out] None
  *	@return		None
  **/
-socketd_server::socketd_server(enum TCP_IP_STACK _P = TCPv4)
+socketd_server::socketd_server(enum TCP_IP_STACK _P)
 {
 	int domain, type, protocol;
 
@@ -80,8 +82,8 @@ void socketd_server::set_socket_opt(int level, int option, bool _switch)
  *	@brief	    Set TCP/IP socket options
  *	@param[in]  level	-	LIBSOCKET_LEVEL_XXX 
  *	@param[in]  option  -	LIBSOCKET_OPT_XXX
- *	@param[in]  optval	-   option value	_
- *	@param[in]  optlen	-   option value length	_
+ *	@param[in]  optval	-   option value
+ *	@param[in]  optlen	-   option value length	
  *	@param[out] None
  *	@return		None
  *	@note		The function suitable the option which value is structure 
@@ -98,6 +100,19 @@ void socketd_server::set_socket_opt(int level, int option, void *optval, socklen
 }
 
 /**
+ *	@brief	    Set TCP/IP socket CGI 
+ *	@param[in]  msg_cgi	- User's CGI handler 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_server::set_socket_cgi(void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr))
+{
+	this->msg_cgi = msg_cgi;
+
+	return;
+}
+
+/**
  *	@brief	    Set TCP/IP socket deamon 
  *	@param[in]  message - true/false 
  *	@param[out] None
@@ -109,9 +124,46 @@ void socketd_server::set_deamon(bool message)
 {
 	int ret = 0;
 
-	ret = daemon(0, meesage);
+	ret = daemon(0, message);
 
 	if (-1 == ret) {throw "Socket deamon set failure";}
+
+	return;
+}
+
+/*
+--------------------------------------------------------------------------------------------------------------------
+*			                                   TCP/IP IMPLEMENT
+--------------------------------------------------------------------------------------------------------------------
+*/
+
+/**
+ *	@brief	    Initial socket server 
+ *	@param[in]  ip 
+ *	@param[in]  port	- Application layer protocol port 
+ *	@param[in]  backlog	- Size of listen queue 
+ *	@param[in]  nfds	- Number of poll/epoll structure 
+ *	@param[out] None
+ *	@return		None
+ *	@note		Param nfds onley works when using method POLL/EPOLL 
+ **/
+void socketd_tcp_v4::server_init(const char *ip, in_port_t port, int backlog, nfds_t nfds)
+{
+	int ret = 0, opt = 1;
+
+    ret = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    saddr.sin_family	  = AF_INET;
+    saddr.sin_addr.s_addr = inet_addr(ip);
+    saddr.sin_port		  = htons(port);
+    bzero(saddr.sin_zero, sizeof(saddr.sin_zero));
+
+    ret = bind(socketfd, (struct sockaddr*)&saddr, sizeof(saddr)); 
+
+	if (-1 == ret) {throw "Socket server init failure";}
+
+	this->nfds	  = nfds;
+	this->backlog = backlog;
 
 	return;
 }
@@ -122,198 +174,181 @@ void socketd_server::set_deamon(bool message)
  *	@param[out] None
  *	@return		None
  **/
-void socketd_tcp_v4::server_init(enum method m, const char *ip, in_port_t port, int backlog=128)
+void socketd_tcp_v4::server_emit(enum method m)
 {
+	int ret = 0;
+
+	ret = listen(socketfd, backlog); 
+
+	if (-1 == ret) {throw "Socket server emit failure";}
+
+	switch(m)
+	{
+		case PPC	   : ppc();		   break;
+		case TPC	   : tpc();		   break;
+		case SELECT_TPC: select_tpc(); break;
+		case POLL_TPC  : poll_tpc();   break;
+		case EPOLL_TPC : epoll_tpc();  break;
+		default		   : block(); 
+	}
 
 	return;
 }
 
-
-
-
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-void *thread_handler(void *arg)
+/**
+ *	@brief	    Private function for TCP/IP server blocking method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::block(void)
 {
-    struct thread_arg targ = *((struct thread_arg *)arg);  
-    pthread_mutex_unlock(&mutex);
-
-    targ.msg_handler(targ.cfd, &(targ.caddr));
-    close(targ.cfd);
-
-    pthread_exit(NULL);
-}
-
-
-void libSocket_start(const struct param_s *param, vpfun msg_handler)
-{
-    int ret = 0;
-    int opt = 1;
-    int cfd, sfd;
-    struct sockaddr_in saddr;
-
-    saddr.sin_family = AF_INET;
-    saddr.sin_port = htons(param->port);
-    saddr.sin_addr.s_addr = inet_addr(param->ipaddr);
-    bzero(saddr.sin_zero, sizeof(saddr.sin_zero));
-
-
-    if(param->daemon == true)
-    {
-        ret = daemon(0, 0);
-        DEBUG(ret, ==, -1, "daemon error ", -1);
-    }
-
-    sfd = socket(AF_INET, param->type, 0);
-    DEBUG(sfd, ==, -1, "socket error ", -1);
-
-    ret = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    DEBUG(ret, ==, -1, "setsockopt error ", -1);
-
-    ret = bind(sfd, (struct sockaddr*)&saddr, sizeof(saddr)); 
-    DEBUG(ret, ==, -1, "bind error ", -1);
-
-    if(param->type == SOCK_STREAM)
-    {
-        ret = listen(sfd, param->backlog); 
-        DEBUG(ret, ==, -1, "listen error ", -1);
-
-        switch(param->way)
-        {
-            case NONE:
-                none(sfd, msg_handler); 
-                break;
-            case PPC: 
-                ppc(sfd, msg_handler);
-                break;
-            case TPC:
-                tpc(sfd, msg_handler);
-                break;
-            case SELECT_TPC:
-                select_tpc(sfd, msg_handler);
-                break;
-            case POLL_TPC:
-                poll_tpc(sfd, param->psize, msg_handler);
-                break;
-            case EPOLL_TPC:
-                epoll_tpc(sfd, param->psize, msg_handler);
-                break;
-        }
-    }
-
-    /*if(param->type == SOCK_DGRAM)*/ //<TBD>
-    /*if(param->type == SOCK_RAW)*/ //<TBD>
-} 
-
-void none(int sfd, vpfun msg_handler)
-{
-    int ret, cfd;
-    socklen_t len;
+    int				   ret = 0;
+	int				   cfd;
+    socklen_t		   len;
     struct sockaddr_in caddr;
+
     len = sizeof(caddr);
 
     bzero(&caddr, len);
-    cfd = accept(sfd, (struct sockaddr*)&caddr, &len);
-    DEBUG(cfd, ==, -1, "accept error ", -1);
+    cfd = accept(socketfd, (struct sockaddr*)&caddr, &len);
 
-    msg_handler(cfd, &caddr);
+	if (-1 == cfd) {throw "Socket server accept failure";}
+
+    msg_cgi(cfd, &caddr);
 
     close(cfd);
+
+	return;
 }
 
-void ppc(int sfd, vpfun msg_handler)
+/**
+ *	@brief	    Private function for TCP/IP server PPC method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::ppc(void)
 {
-    int ret, pid, cfd;
-    socklen_t len;
+    int				   ret = 0;
+	int				   cfd;
+    socklen_t		   len;
     struct sockaddr_in caddr;
+
     len = sizeof(caddr);
 
     while(true)
     {
         bzero(&caddr, len);
-        cfd = accept(sfd, (struct sockaddr*)&caddr, &len);
-        DEBUG(cfd, ==, -1, "accept error ", -1);
+        cfd = accept(socketfd, (struct sockaddr*)&caddr, &len);
+
+		if (-1 == cfd) {throw "Socket server accept failure";}
 
         signal(SIGCHLD, SIG_IGN);
 
-        pid = fork();
-        if(0 == pid)
+        if(fork() == 0) /**< Child process */
         {
-            close(sfd);
+            close(socketfd);
 
-            msg_handler(cfd, &caddr);
+            msg_cgi(cfd, &caddr);
 
             close(cfd);
             raise(SIGKILL);
         }
+
         close(cfd);
     }
+
+	return;
 }
 
-void tpc(int sfd, vpfun msg_handler)
+/**
+ *	@brief	    Private function for TCP/IP server TPC method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::tpc(void)
 {
-    int ret, cfd;
-    socklen_t len;
-    pthread_t tid;
-    struct thread_arg targ;
+    int				   ret = 0;
+	int				   cfd;
+    socklen_t		   len;
+    pthread_t		   tid;
+    struct thread_args targs;
     struct sockaddr_in caddr;
+
     len = sizeof(caddr);
 
     while(true)
     {
         bzero(&caddr, len);
-        cfd = accept(sfd, (struct sockaddr *)&caddr, &len);
-        DEBUG(cfd, ==, -1, "accept error ", -1);
+        cfd = accept(socketfd, (struct sockaddr *)&caddr, &len);
 
-        pthread_mutex_lock(&mutex);
+		if (-1 == cfd) {throw "Socket server accept failure";}
 
-        bzero(&targ, sizeof(targ));
-        targ.cfd = cfd;
-        targ.caddr = caddr;
-        targ.msg_handler = msg_handler;
+        pthread_mutex_lock(&socketd_tcp_v4::mutex);
 
-        ret = pthread_create(&tid, NULL, thread_handler, &targ);
-        DEBUG(ret, !=, 0, "pthread_create error ", -1);
+		targs.msg_cgi	 = msg_cgi;
+        targs.cfd		 = cfd;
+        targs.caddr		 = caddr;
+
+        ret = pthread_create(&tid, NULL, thread_hook, &targs);
+
+		if (-1 == ret) {throw "Socket server pthread create failure";}
 
         ret = pthread_detach(tid);
-        DEBUG(ret, !=, 0, "pthread_detach error ", -1);
+
+		if (-1 == ret) {throw "Socket server pthread detach failure";}
     }
+
+	return;
 }
 
-void select_tpc(int sfd, vpfun msg_handler)
+/**
+ *	@brief	    Private function for TCP/IP server SELECT_TPC method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::select_tpc(void)
 {
-    int ret, i, cfd, maxfd;
-    socklen_t len;
-    pthread_t tid;
-    int bakfd[FD_SETSIZE]; 
-    fd_set tmp_set, all_set;
-    struct thread_arg targ;
+    int				   ret = 0;
+	int				   cfd;
+	int				   maxfd;
+    int                bakfd[FD_SETSIZE]; 
+    fd_set			   tmp_set;
+	fd_set			   all_set;
+    socklen_t		   len;
+    pthread_t		   tid;
+    struct thread_args targs;
     struct sockaddr_in caddr;
 
-    maxfd = sfd;
+    maxfd = socketfd;
     len = sizeof(caddr);
 
-    memset(bakfd, -1, sizeof(int)*FD_SETSIZE);
-    FD_ZERO(&tmp_set);
-    FD_ZERO(&all_set);
-    FD_SET(sfd, &all_set);
+    memset  (bakfd, -1, sizeof(int)*FD_SETSIZE);
+    FD_ZERO (&tmp_set);
+    FD_ZERO (&all_set);
+    FD_SET  (socketfd, &all_set);
 
     while(true)
     {
         tmp_set = all_set;
-        ret = select(maxfd + 1, &tmp_set, NULL, NULL, NULL);
-        DEBUG(ret, ==, -1, "select error ", -1);
 
-        if(FD_ISSET(sfd, &tmp_set))
+        ret = select(maxfd + 1, &tmp_set, NULL, NULL, NULL);
+
+		if (-1 == ret) {throw "Socket server select failure";}
+
+        if(FD_ISSET(socketfd, &tmp_set))
         {
             bzero(&caddr, len);
-            cfd = accept(sfd, NULL, NULL);
-            DEBUG(cfd, ==, -1, "accept error ", -1);
+            cfd = accept(socketfd, NULL, NULL);
+
+			if (-1 == cfd) {throw "Socket server accept failure";}
 
             FD_SET(cfd, &all_set);
 
-            for(i=0; i<FD_SETSIZE; i++)
+            for(int i = 0; i < FD_SETSIZE; i++)
             {
                 if(-1 == bakfd[i])
                 {
@@ -322,7 +357,7 @@ void select_tpc(int sfd, vpfun msg_handler)
                 }
             }
 
-            for(i=0; i<FD_SETSIZE; i++)
+            for(int i = 0; i < FD_SETSIZE; i++)
             {
                 if(bakfd[i] > maxfd) 
                 {
@@ -331,56 +366,65 @@ void select_tpc(int sfd, vpfun msg_handler)
                 }
             }
         }
-        else //"else" can be ignored, the server performences depends on clients. 
+        else /**< "else" can be ignored, the server performences depends on clients */
         {
-            for(i=0; i<FD_SETSIZE; i++)
+            for(int i = 0; i < FD_SETSIZE; i++)
             {
-                if(-1 == bakfd[i]) 
-                    continue;
+                if(-1 == bakfd[i]) {continue;}
 
                 if(FD_ISSET(bakfd[i], &tmp_set))
                 {
                     FD_CLR(bakfd[i], &all_set);
 
-                    pthread_mutex_lock(&mutex);
+                    pthread_mutex_lock(&socketd_tcp_v4::mutex);
 
                     ret = getpeername(cfd, (struct sockaddr *)&caddr, &len);
-                    DEBUG(ret, ==, -1, "getpeername error ", -1);
 
-                    bzero(&targ, sizeof(targ));
-                    targ.msg_handler = msg_handler;
-                    targ.caddr = caddr;
-                    targ.cfd = bakfd[i];
+					if (-1 == ret) {throw "Socket server getpeername failure";}
+
+                    targs.msg_cgi = msg_cgi;
+                    targs.caddr	  = caddr;
+                    targs.cfd	  = bakfd[i];
 
                     bakfd[i] = -1;
 
-                    ret = pthread_create(&tid, NULL, thread_handler, &targ);
-                    DEBUG(ret, !=, 0, "pthread_create error ", -1);
+                    ret = pthread_create(&tid, NULL, thread_hook, &targs);
+
+					if (-1 == ret) {throw "Socket server pthread create failure";}
 
                     ret = pthread_detach(tid);
-                    DEBUG(ret, !=, 0, "pthread_detach error ", -1);
+
+					if (-1 == ret) {throw "Socket server pthread detach failure";}
                 }
             }
         }
     }
-    close(sfd);
+
+    close(socketfd);
+
+	return;
 }
 
-void poll_tpc(int sfd, nfds_t psize, vpfun msg_handler)
+/**
+ *	@brief	    Private function for TCP/IP server POLL_TPC method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::poll_tpc(void)
 {
-    int ret, cfd, i;
-    socklen_t len;
-    pthread_t tid;
-    nfds_t maxnfd;
-    nfds_t countfd;
-    struct pollfd pfd[psize];
-    struct thread_arg targ;
+    int				   ret = 0;
+	int				   cfd;
+    socklen_t		   len;
+    pthread_t		   tid;
+    nfds_t		       maxnfd = 0;
+    nfds_t			   countfd = 0;
+    struct pollfd	   pfd[nfds];
+    struct thread_args targs;
     struct sockaddr_in caddr;
 
-    maxnfd = 0;
-    countfd = 0;
-    memset(pfd, -1, sizeof(struct pollfd)*psize);
-    pfd[0].fd = sfd;
+    memset(pfd, -1, sizeof(struct pollfd)*nfds);
+    pfd[0].fd = socketfd;
     pfd[0].events = POLLIN;
 
     len = sizeof(caddr);
@@ -388,128 +432,176 @@ void poll_tpc(int sfd, nfds_t psize, vpfun msg_handler)
     while(true)
     {
         ret = poll(pfd, maxnfd+1, -1);
-        DEBUG(ret, ==, -1, "poll erro ", -1);
+
+		if (-1 == ret) {throw "Socket server poll failure";}
 
         if(pfd[0].revents & POLLIN)
         {
             bzero(&caddr, len);
-            cfd = accept(sfd, NULL, NULL); 
-            DEBUG(cfd, ==, -1, "accept erro ", -1);
+            cfd = accept(socketfd, NULL, NULL); 
 
-            for(i=1; i<psize; i++)
+			if (-1 == cfd) {throw "Socket server accept failure";}
+
+            for(int i = 1; i < nfds; i++)
             {
                 if(-1 == pfd[i].fd) 
                 {
                     pfd[i].fd = cfd; 
                     pfd[i].events = POLLIN;
                     countfd++;
+
                     break;
                 }
             }
 
-            if(countfd > maxnfd)
-                maxnfd = countfd;
+            if(countfd > maxnfd) {maxnfd = countfd;}
         }
-        else //"else" can be ignored, the server performences depends on clients. 
+        else /**< "else" can be ignored, the server performences depends on clients */
         {
-            for(i=1; i<psize; i++)
+            for(int i = 1; i < nfds; i++)
             {  
-                if(-1 == pfd[i].fd)
-                    continue;
+                if(-1 == pfd[i].fd) {continue;}
 
                 if(pfd[i].revents & POLLIN)
                 {  
-                    pthread_mutex_lock(&mutex);
+                    pthread_mutex_lock(&socketd_tcp_v4::mutex);
 
                     ret = getpeername(cfd, (struct sockaddr *)&caddr, &len);
-                    DEBUG(ret, ==, -1, "getpeername error ", -1);
 
-                    bzero(&targ, sizeof(targ));
-                    targ.msg_handler = msg_handler;
-                    targ.caddr = caddr;
-                    targ.cfd = pfd[i].fd;
+					if (-1 == ret) {throw "Socket server getpeername failure";}
+
+                    targs.msg_cgi = msg_cgi;
+                    targs.caddr	  = caddr;
+                    targs.cfd	  = pfd[i].fd;
 
                     pfd[i].fd = -1;
                     countfd--;
 
-                    ret = pthread_create(&tid, NULL, thread_handler, &targ);
-                    DEBUG(ret, !=, 0, "pthread_create error ", -1);
+                    ret = pthread_create(&tid, NULL, thread_hook, &targs);
+
+					if (-1 == ret) {throw "Socket server pthread create failure";}
 
                     ret = pthread_detach(tid);
-                    DEBUG(ret, !=, 0, "pthread_detach error ", -1);
-                }  
-            }  
-        }
-    }  
-    close(sfd);  
-}  
 
-void epoll_tpc(int sfd, nfds_t psize, vpfun msg_handler)
+					if (-1 == ret) {throw "Socket server pthread detach failure";}
+                }  
+            }
+        }
+    }
+
+    close(socketfd);  
+
+	return;
+}
+
+/**
+ *	@brief	    Private function for TCP/IP server EPOLL_TPC method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::epoll_tpc(void)
 {
-    int ret, efd, cfd, nfd, i, max_event;
-    socklen_t len;
-    pthread_t tid;
+    int				   ret = 0;
+	int				   efd;
+	int				   cfd;
+	int				   nfd;
+	int				   max_event;
+    socklen_t		   len;
+    pthread_t		   tid;
     struct epoll_event ev;
-    struct epoll_event ea[psize];
-    struct thread_arg targ;
+    struct epoll_event ea[nfds];
+    struct thread_args targs;
     struct sockaddr_in caddr;
 
     len = sizeof(caddr);
-    bzero(&ev.data, sizeof(ev.data));//Init or valgrind errors appears on funciton epoll_ctl()  
+    bzero(&ev.data, sizeof(ev.data)); /**< Init or valgrind errors appears on funciton epoll_ctl() */
     ev.events = EPOLLIN;
-    ev.data.fd = sfd;
+    ev.data.fd = socketfd;
 
     efd = epoll_create(1);
-    DEBUG(efd, ==, -1, "epoll_create error ", -1);
 
-    ret = epoll_ctl(efd, EPOLL_CTL_ADD, sfd, &ev);
-    DEBUG(ret, ==, -1, "epoll_ctl error ", -1);
+	if (-1 == ret) {throw "Socket server epoll create failure";}
+
+    ret = epoll_ctl(efd, EPOLL_CTL_ADD, socketfd, &ev);
+
+	if (-1 == ret) {throw "Socket server epoll ctl failure";}
 
     max_event = 1;
     while(true)
     {
         nfd = epoll_wait(efd, ea, max_event, -1); 
-        DEBUG(nfd, ==, -1, "epoll_wait error ", -1);
 
-        for(i=0; i<nfd; i++)
+		if (-1 == nfd) {throw "Socket server epoll wait failure";}
+
+        for(int i = 0; i < nfd; i++)
         {
-           if(sfd == ea[i].data.fd)  
+           if(socketfd == ea[i].data.fd)  
            {
-                cfd = accept(sfd, NULL, NULL); 
-                DEBUG(cfd, ==, -1, "accept error ", -1);
+                cfd = accept(socketfd, NULL, NULL); 
+
+				if (-1 == cfd) {throw "Socket server accept failure";}
 
                 ev.events = EPOLLIN;
                 ev.data.fd = cfd;
+
                 ret = epoll_ctl(efd, EPOLL_CTL_ADD, cfd, &ev);
-                DEBUG(ret, ==, -1, "epoll_ctl error ", -1);
+
+			   if (-1 == ret) {throw "Socket server epoll ctl failure";}
 
                 max_event++;
            }
            else
            {
-               pthread_mutex_lock(&mutex);
+               pthread_mutex_lock(&socketd_tcp_v4::mutex);
 
                cfd = ea[i].data.fd;
                ret = getpeername(cfd, (struct sockaddr *)&caddr, &len);
-               DEBUG(ret, ==, -1, "getpeername error ", -1);
 
-               bzero(&targ, sizeof(targ));
-               targ.msg_handler = msg_handler;
-               targ.caddr = caddr;
-               targ.cfd = cfd;
+			   if (-1 == ret) {throw "Socket server getpeername failure";}
+
+			   targs.msg_cgi = msg_cgi;
+			   targs.caddr	 = caddr;
+               targs.cfd	 = cfd;
 
                ret = epoll_ctl(efd, EPOLL_CTL_DEL, cfd, &ev); 
-               DEBUG(ret, ==, -1, "epoll_ctl error ", -1);
+
+			   if (-1 == ret) {throw "Socket server epoll ctl failure";}
 
                max_event--;
 
-               ret = pthread_create(&tid, NULL, thread_handler, &targ);
-               DEBUG(ret, !=, 0, "pthread_create error ", -1);
+			   ret = pthread_create(&tid, NULL, thread_hook, &targs);
 
-               ret = pthread_detach(tid);
-               DEBUG(ret, !=, 0, "pthread_detach error ", -1);
+			   if (-1 == ret) {throw "Socket server pthread create failure";}
+
+			   ret = pthread_detach(tid);
+
+			   if (-1 == ret) {throw "Socket server pthread detach failure";}
            }
         }
     }
-    close(sfd);
+
+    close(socketfd);
+
+	return;
 }
+
+/**
+ *	@brief	    Thread hook function for TCP/IP server TPCs method 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void *socketd_tcp_v4::thread_hook(void *arg)
+{
+    struct thread_args targs = *((struct thread_args *)arg);  
+
+    pthread_mutex_unlock(&mutex);
+
+	targs.msg_cgi(targs.cfd, &(targs.caddr));
+
+    close(targs.cfd);
+
+    pthread_exit(NULL);
+}
+
