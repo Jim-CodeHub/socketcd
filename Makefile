@@ -11,7 +11,7 @@ CXX				=	g++
 
 CXXFLAGS		=	-Werror -std=c++11
 CXXFLAGS       += 	-Wall
-#CXXFLAGS       += 	-g
+#CXXFLAGS		+=  -g
 
 SUBDIRS 		=   src/server src/client	
 
@@ -34,6 +34,11 @@ $(SUBDIRS):
 	$(MAKE) -C $@	
 
 install:
+	mkdir socketcd
+	cp src/server/socketd.hpp ./socketcd
+	cp src/server/socket.hpp  ./socketcd
+	cp src/client/socketc.hpp ./socketcd
+	mv $(PROJECT).a ./socketcd
  
 tags:
 	@rm -rf ./tags
@@ -47,5 +52,6 @@ tags:
 
 clean:
 	@rm -rf $(shell find ./ -name "*.o")
-	@rm -rf $(TARGET).*
+	@rm -rf $(PROJECT).*
+	@rm -rf socketcd 
  

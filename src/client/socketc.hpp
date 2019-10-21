@@ -23,7 +23,8 @@
 #include <sys/socket.h>
 #include <cstring>
 #include <cstring>
-#include "../socket.hpp"
+
+#include "socket.hpp"
 
 
 namespace NS_LIBSOCKET{

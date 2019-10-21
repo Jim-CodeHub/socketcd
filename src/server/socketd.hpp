@@ -31,7 +31,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <csignal>
-#include "../socket.hpp"
+
+#include "socket.hpp"
 
 
 namespace NS_LIBSOCKET{

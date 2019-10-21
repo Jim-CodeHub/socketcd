@@ -2,8 +2,9 @@
 
 ## Install
 
-make CXX=compiler INCLUDE=install dir
-make install
+make && make install
+
+Then socketcd directory will be created, and the following is up to you 
 
 ## Note
 * Client behavior is implementation dependent in function msg_cgi(). 
