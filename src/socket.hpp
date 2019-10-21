@@ -75,6 +75,15 @@ namespace NS_LIBSOCKET{
 #define	 LIBSOCKET_OPT_SO_SNDTIMEO						SO_SNDTIMO
 #define	 LIBSOCKET_OPT_SO_TYPE							SO_TYPE				/* Only getsocketopt				  */
 
+																			/*------ Socket message flags --------*/
+#define  LIBSOCKET_RECV_MSG_OOB							MSG_OOB
+#define  LIBSOCKET_RECV_MSG_PEEK						MSG_PEEK
+#define  LIBSOCKET_RECV_MSG_WAITALL						MSG_WAITALL			/* Only for SOCK_STREAM				  */
+
+#define  LIBSOCKET_SEND_MSG_EOR							MSG_EOR
+#define  LIBSOCKET_SEND_MSG_NOSIGNAL					MSG_NOSIGNAL
+#define	 LIBSOCKET_SEND_MSG_OOB							MSG_OOB
+
 
 /*-----------------------------------------------------------------------------------------------------------------
  * 

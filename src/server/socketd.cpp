@@ -1,5 +1,5 @@
 /**-----------------------------------------------------------------------------------------------------------------
- * @file	socketd.c
+ * @file	socketd.cpp
  * @brief	Server-side TCP/IP stack library with POSIX 1003.1g standard socket API
  *
  * Copyright (c) 2019-2019 Jim Zhang 303683086@qq.com
@@ -138,6 +138,7 @@ void socketd_server::set_deamon(bool message)
  *	@brief	    Initial socket server 
  *	@param[in]  ip 
  *	@param[in]  port	- Application layer protocol port 
+ *	@param[in]  msg_cgi - User's client message handler  
  *	@param[out] None
  *	@return		None
  **/
@@ -162,8 +163,8 @@ void socketd_tcp_v4::server_init(const char *ip, in_port_t port, CGI_T msg_cgi)
 }
 
 /**
- *	@brief	    Initial socket server 
- *	@param[in]  method	-  BLOCK/PPC/TPC/SELECT_TPC/POLL_TPC/EPOLL_TPC 
+ *	@brief	    Start socket server 
+ *	@param[in]  method	- BLOCK/PPC/TPC/SELECT_TPC/POLL_TPC/EPOLL_TPC 
  *	@param[in]  backlog	- Size of listen queue 
  *	@param[in]  nfds	- Number of poll/epoll structure 
  *	@param[out] None
@@ -201,7 +202,6 @@ void socketd_tcp_v4::server_emit(enum method m, int backlog, nfds_t nfds)
  **/
 void socketd_tcp_v4::block(void)
 {
-    int				   ret = 0;
 	int				   cfd;
     socklen_t		   len;
     struct sockaddr_in caddr;
@@ -228,7 +228,6 @@ void socketd_tcp_v4::block(void)
  **/
 void socketd_tcp_v4::ppc(void)
 {
-    int				   ret = 0;
 	int				   cfd;
     socklen_t		   len;
     struct sockaddr_in caddr;
@@ -440,7 +439,7 @@ void socketd_tcp_v4::poll_tpc(void)
 
 			if (-1 == cfd) {throw "Socket server accept failure";}
 
-            for(int i = 1; i < nfds; i++)
+            for(nfds_t i = 1; i < nfds; i++)
             {
                 if(-1 == pfd[i].fd) 
                 {
@@ -456,7 +455,7 @@ void socketd_tcp_v4::poll_tpc(void)
         }
         else /**< "else" can be ignored, the server performences depends on clients */
         {
-            for(int i = 1; i < nfds; i++)
+            for(nfds_t i = 1; i < nfds; i++)
             {  
                 if(-1 == pfd[i].fd) {continue;}
 

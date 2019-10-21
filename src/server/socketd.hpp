@@ -1,5 +1,5 @@
 /**-----------------------------------------------------------------------------------------------------------------
- * @file	socketd.h;
+ * @file	socketd.hpp
  * @brief	Server-side TCP/IP stack library with POSIX 1003.1g standard socket API
  *
  * Copyright (c) 2019-2019 Jim Zhang 303683086@qq.com

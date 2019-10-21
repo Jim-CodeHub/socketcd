@@ -1,9 +1,8 @@
-# server-side/client-side TCP/IP stack library with POSIX 1003.1g standard socket API and language C++
+# TCP/IP stack library with language C++ and POSIX 1003.1g standard API
 
 ## Install
 
-./configure
-make
+make CXX=compiler INCLUDE=install dir
 make install
 
 ## Note
@@ -12,16 +11,17 @@ make install
 * Administrator privileges must be used 
 
 ## Demo
-    //main.c
 
-    #include "libsocket.h"
+###Server side
 
-    #define PORT 808 
-    #define ADDR "127.0.0.1" 
+    #include <socketd.hpp>
+
+	using namespace NS_LIBSOCKET;
 
     void msg_handler(int cfd, const struct sockaddr_in *caddr)
     {
-        char buff[1023];
+        char buff[1000];
+
         recv(cfd, buff, sizeof(buff), 0);
         send(cfd, "back", 5, 0);
     }
@@ -33,13 +33,32 @@ make install
 		TCP.server_init("127.0.0.1", 80);
 		TCP.server_emit(PPC);
 
-        /*SHOULD NOT BE ANY CODES BELOW!*/
+        /* SHOULD NOT BE ANY CODES BELOW! */
 
         return 0;
     }
 
-    //command line
-    #gcc main.c -lsocket -lpthread
+
+###Client side
+
+    #include <socketc.hpp>
+
+	using namespace NS_LIBSOCKET;
+
+    int main(void)
+    {
+		socketc_tcp_v4 TCP;
+
+		TCP.server_init("127.0.0.1", 80);
+
+        /* MESSAGE HANDLER BELOW */
+		// Such as data_send(...)/data_recv(...) etc.
+
+        return 0;
+    }
+
+###Command line
+    gcc app.c -lsocketcd -lpthread
 
 ## Performence
 	TBD
