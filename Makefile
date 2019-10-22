@@ -13,7 +13,7 @@ CXXFLAGS		=	-Werror -std=c++11
 CXXFLAGS       += 	-Wall
 #CXXFLAGS		+=  -g
 
-SUBDIRS 		=   src/server src/client	
+SUBDIRS 		=   src/server src/client
 
 export CXX CXXFLAGS
 
@@ -33,11 +33,9 @@ all:$(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@	
 
-install:
+install:clean
 	mkdir socketcd
-	cp src/server/socketd.hpp ./socketcd
-	cp src/server/socket.hpp  ./socketcd
-	cp src/client/socketc.hpp ./socketcd
+	cp $(shell find ./ -name "*.hpp") ./socketcd
 	mv $(PROJECT).a ./socketcd
  
 tags:
@@ -51,7 +49,9 @@ tags:
 		  --exclude="*.lss" -R .
 
 clean:
+	for dir in $(SUBDIRS); do 		\
+		$(MAKE) -C $$dir clean;		\
+	done
 	@rm -rf $(shell find ./ -name "*.o")
-	@rm -rf $(PROJECT).*
 	@rm -rf socketcd 
- 
+

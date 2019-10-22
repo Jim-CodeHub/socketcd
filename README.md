@@ -1,4 +1,4 @@
-# TCP/IP stack library with language C++ and POSIX 1003.1g standard API
+# TCP/IP stack library with language C++ and POSIX.1 std API
 
 ## Install
 

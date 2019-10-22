@@ -26,11 +26,12 @@ $(SUBDIRS):ECHO
 ECHO:
 
 %.o:%.cpp
+	cp ../socket.hpp . -rf
 	$(CXX) $(CXXFLAGS) -c $^ -o $@
 
 .PHONY:clean
 clean:
-	$(MAKE) clean -C $(SUBDIRS)
 	rm -rf *.o
+	rm -rf ./socket.hpp
 
 
