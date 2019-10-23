@@ -169,7 +169,7 @@ void socketc_tcp_v4::client_init(const char *ip, in_port_t port)
 
     ret = connect(socketfd, (struct sockaddr *)&caddr, sizeof(caddr));
 
-	if (-1 == ret) {throw "Socket client init failure";}
+	if (-1 == ret) {throw "Socket client connect failure";}
 
 	return;
 }
@@ -182,4 +182,3 @@ void socketc_tcp_v4::client_init(const char *ip, in_port_t port)
  **/
 //void socketc_tcp_v4::client_emit(void)
 
-int main(void){};
