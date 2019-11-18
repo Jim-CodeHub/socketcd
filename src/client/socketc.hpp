@@ -57,6 +57,8 @@ class socketc_client{
 		ssize_t data_recv(void *data, size_t len, int flags);	
 		ssize_t data_send(void *data, size_t len, int flags);
 
+		//getaddrinfo TBD
+
 	protected:
 		int socketfd;
 };
