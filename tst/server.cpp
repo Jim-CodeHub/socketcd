@@ -1,8 +1,8 @@
 #include <iostream>
-#include <socketd.hpp>
+#include <socketcd/src/socketcd.hpp>
 
 using namespace std;
-using namespace NS_LIBSOCKET;
+using namespace NS_SOCKETCD;
 
 void msg_cgi(int cfd, const struct sockaddr_in *caddr)
 {

@@ -32,10 +32,10 @@
 #include <cstdlib>
 #include <csignal>
 
-#include "socket.hpp"
+#include <socketcd/src/socket.hpp>
 
 
-namespace NS_LIBSOCKET{
+namespace NS_SOCKETCD{
 
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -107,6 +107,7 @@ class socketd_tcp_v4 : public socketd_server{
 		enum method		   m;
 		CGI_T			   msg_cgi;
 
+	private:
 		void block		(void); /**< Blocking TCP/IP socket server				   */
 		void ppc		(void); /**< Multi process TCP/IP socket server			   */
 		void tpc		(void); /**< Multi thread TCP/IP socket server			   */
@@ -116,7 +117,7 @@ class socketd_tcp_v4 : public socketd_server{
 };
 
 
-} /*< NS_LIBSOCKET */
+} /*< NS_SOCKETCD */
 
 
 #endif /*__SOCKETD_H__*/

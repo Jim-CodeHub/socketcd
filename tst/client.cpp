@@ -1,8 +1,8 @@
 #include <iostream>
-#include <socketc.hpp>
+#include <socketcd/src/socketcd.hpp>
 
 using namespace std;
-using namespace NS_LIBSOCKET;
+using namespace NS_SOCKETCD;
 
 int main(void)
 {

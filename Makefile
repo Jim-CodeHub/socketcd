@@ -5,17 +5,19 @@
 #-------------------------------------------------------------------------------------------------------
 
 
-PROJECT			=   socketcd
+PROJECT				=   socketcd
 
-CXX				=	g++
+CXX					=	g++
 
-CXXFLAGS		=	-Werror -std=c++11
-CXXFLAGS       += 	-Wall
-#CXXFLAGS		+=  -g
+CXXFLAGS			=	-Werror -std=c++11
+CXXFLAGS   	       += 	-Wall
+#CXXFLAGS			+=  -g
 
-SUBDIRS 		=   src/server src/client
+SUBDIRS 			=   src/server src/client
 
-export CXX CXXFLAGS
+CPLUS_INCLUDE_PATH = $(shell dirname `pwd`)
+
+export CXX CXXFLAGS CPLUS_INCLUDE_PATH
 
 
 #-------------------------------------------------------------------------------------------------------
@@ -28,16 +30,24 @@ export CXX CXXFLAGS
 .PHONY: all clean install $(SUBDIRS)
 
 all:$(SUBDIRS)
-	ar -rcs $(PROJECT).a $(shell find ./ -name "*.o")
+	ar -rcs $(PROJECT).a $(shell find ./src -name "*.o")
+	$(CXX) -fPIC -shared $(shell find ./src -name "*.cpp") -o $(PROJECT).so
 
 $(SUBDIRS):
 	$(MAKE) -C $@	
 
-install:clean
-	mkdir socketcd
-	cp $(shell find ./ -name "*.hpp") ./socketcd
-	mv $(PROJECT).a ./socketcd
- 
+install:
+	@make
+	@mkdir socketcd
+	@mkdir socketcd/include
+	@mkdir socketcd/lib
+	@rm -rf socketcd/client/Makefile
+	@rm -rf socketcd/client/socketc.cpp
+	@rm -rf socketcd/server/Makefile
+	@rm -rf socketcd/server/socketd.cpp
+	@mv ./socketcd.a socketcd/lib
+	@mv ./socketcd.so socketcd/lib
+
 tags:
 	@rm -rf ./tags
 	ctags --exclude="docs"			\
@@ -53,5 +63,4 @@ clean:
 		$(MAKE) -C $$dir clean;		\
 	done
 	@rm -rf $(shell find ./ -name "*.o")
-	@rm -rf socketcd 
 

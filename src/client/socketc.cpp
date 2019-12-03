@@ -5,10 +5,11 @@
  * Copyright (c) 2019-2019 Jim Zhang 303683086@qq.com
  *------------------------------------------------------------------------------------------------------------------
 */
-#include "socketc.hpp" 
+
+#include <socketcd/src/client/socketc.hpp>
 
 
-using namespace NS_LIBSOCKET;
+using namespace NS_SOCKETCD;
 
 
 /*
@@ -32,24 +33,24 @@ socketc_client::socketc_client(enum TCP_IP_STACK _P)
 	switch (_P)
 	{
 		case TCPv4:
-			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET			;
-			type     = LIBSOCKET_TYPE_POSIX1_SOCK_STREAM		; 
-			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_TCP	; 
+			domain   = SOCKETCD_DOMAIN_POSIX1_AF_INET			;
+			type     = SOCKETCD_TYPE_POSIX1_SOCK_STREAM		; 
+			protocol = SOCKETCD_PROTOCOL_POSIX1_IPPROTO_TCP	; 
 			break;
 		case TCPv6:
-			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET6			;
-			type     = LIBSOCKET_TYPE_POSIX1_SOCK_STREAM		; 
-			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_TCP	; 
+			domain   = SOCKETCD_DOMAIN_POSIX1_AF_INET6			;
+			type     = SOCKETCD_TYPE_POSIX1_SOCK_STREAM		; 
+			protocol = SOCKETCD_PROTOCOL_POSIX1_IPPROTO_TCP	; 
 			break;
 		case UDPv4:
-			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET			;
-			type     = LIBSOCKET_TYPE_POSIX1_SOCK_DGRAM			; 
-			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_UDP	; 
+			domain   = SOCKETCD_DOMAIN_POSIX1_AF_INET			;
+			type     = SOCKETCD_TYPE_POSIX1_SOCK_DGRAM			; 
+			protocol = SOCKETCD_PROTOCOL_POSIX1_IPPROTO_UDP	; 
 			break;
 		case UDPv6:
-			domain   = LIBSOCKET_DOMAIN_POSIX1_AF_INET6			;
-			type     = LIBSOCKET_TYPE_POSIX1_SOCK_DGRAM			; 
-			protocol = LIBSOCKET_PROTOCOL_POSIX1_IPPROTO_UDP	; 
+			domain   = SOCKETCD_DOMAIN_POSIX1_AF_INET6			;
+			type     = SOCKETCD_TYPE_POSIX1_SOCK_DGRAM			; 
+			protocol = SOCKETCD_PROTOCOL_POSIX1_IPPROTO_UDP	; 
 			break;
 		default: ;
 	}
@@ -61,8 +62,8 @@ socketc_client::socketc_client(enum TCP_IP_STACK _P)
 
 /**
  *	@brief	    Set TCP/IP socket options
- *	@param[in]  level	-	LIBSOCKET_LEVEL_XXX 
- *	@param[in]  option  -	LIBSOCKET_OPT_XXX
+ *	@param[in]  level	-	SOCKETCD_LEVEL_XXX 
+ *	@param[in]  option  -	SOCKETCD_OPT_XXX
  *	@param[in]  _switch -	true/false
  *	@param[out] None
  *	@return		None
@@ -81,8 +82,8 @@ void socketc_client::set_socket_opt(int level, int option, bool _switch)
 
 /**
  *	@brief	    Set TCP/IP socket options
- *	@param[in]  level	-	LIBSOCKET_LEVEL_XXX 
- *	@param[in]  option  -	LIBSOCKET_OPT_XXX
+ *	@param[in]  level	-	SOCKETCD_LEVEL_XXX 
+ *	@param[in]  option  -	SOCKETCD_OPT_XXX
  *	@param[in]  optval	-   option value
  *	@param[in]  optlen	-   option value length	
  *	@param[out] None
@@ -103,7 +104,7 @@ void socketc_client::set_socket_opt(int level, int option, void *optval, socklen
 /**
  *	@brief	    Recive data from socket
  *	@param[in]  len	   - data buffer length 
- *	@param[in]  flags  - LIBSOCKET_RECV_MSG_XXX or 0 
+ *	@param[in]  flags  - SOCKETCD_RECV_MSG_XXX or 0 
  *	@param[out] data 
  *	@return		Bytes length of data/0 when no data	or peer has been over
  **/
@@ -122,7 +123,7 @@ ssize_t socketc_client::data_recv(void *buff, size_t len, int flags)
  *	@brief	    Send data into socket
  *	@param[in]  data 
  *	@param[in]  len	   - data length 
- *	@param[in]  flags  - LIBSOCKET_SEND_MSG_XXX or 0 
+ *	@param[in]  flags  - SOCKETCD_SEND_MSG_XXX or 0 
  *	@param[out] None
  *	@return		Bytes length of data
  **/

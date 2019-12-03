@@ -23,10 +23,10 @@
 #include <sys/socket.h>
 #include <cstring>
 
-#include "socket.hpp"
+#include <socketcd/src/socket.hpp>
 
 
-namespace NS_LIBSOCKET{
+namespace NS_SOCKETCD{
 
 
 /*-----------------------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ class socketc_tcp_v4 : public socketc_client{
 };
 
 
-} /*< NS_LIBSOCKET */
+} /*< NS_SOCKETCD */
 
 
 #endif /*__SOCKETC_H__*/
