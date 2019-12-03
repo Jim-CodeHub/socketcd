@@ -38,8 +38,8 @@ $(SUBDIRS):
 
 install:
 	@make
-	$(shell if [ ! -d socketcd ]i; then mkdir socketcd; fi;)
-	@cp -rf ./src ./socketcd
+	$(shell if [ ! -d socketcd ]; then `mkdir -p socketcd/src`; fi;)
+	$(shell cp -rf src/* ./socketcd/src )
 	@rm -rf socketcd/src/client/Makefile
 	@rm -rf socketcd/src/client/socketc.cpp
 	@rm -rf socketcd/src/client/socketc.o
