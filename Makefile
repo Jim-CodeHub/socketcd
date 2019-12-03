@@ -38,15 +38,16 @@ $(SUBDIRS):
 
 install:
 	@make
-	@mkdir socketcd
-	@mkdir socketcd/include
-	@mkdir socketcd/lib
-	@rm -rf socketcd/client/Makefile
-	@rm -rf socketcd/client/socketc.cpp
-	@rm -rf socketcd/server/Makefile
-	@rm -rf socketcd/server/socketd.cpp
-	@mv ./socketcd.a socketcd/lib
-	@mv ./socketcd.so socketcd/lib
+	$(shell if [ ! -d socketcd ]i; then mkdir socketcd; fi;)
+	@cp -rf ./src ./socketcd
+	@rm -rf socketcd/src/client/Makefile
+	@rm -rf socketcd/src/client/socketc.cpp
+	@rm -rf socketcd/src/client/socketc.o
+	@rm -rf socketcd/src/server/Makefile
+	@rm -rf socketcd/src/server/socketd.cpp
+	@rm -rf socketcd/src/server/socketd.o
+	@mv ./socketcd.a socketcd
+	@mv ./socketcd.so socketcd
 
 tags:
 	@rm -rf ./tags

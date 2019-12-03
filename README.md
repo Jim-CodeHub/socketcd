@@ -2,9 +2,10 @@
 
 ## Install
 
-make && make install
+make install
 
-Then socketcd directory will be created, and the following is up to you 
+Note : the library will not install you computer directly
+	   , instead, socketcd directory will be created, and the following is up to you 
 
 ## Note
 * Client behavior is implementation dependent in function msg_cgi(). 
@@ -15,9 +16,9 @@ Then socketcd directory will be created, and the following is up to you
 
 ###Server side
 
-    #include <socketd.hpp>
+    #include <socketcd/src/socketcd.hpp>
 
-	using namespace NS_LIBSOCKET;
+	using namespace NS_SOCKETCD;
 
     void msg_handler(int cfd, const struct sockaddr_in *caddr)
     {
@@ -42,9 +43,9 @@ Then socketcd directory will be created, and the following is up to you
 
 ###Client side
 
-    #include <socketc.hpp>
+    #include <socketcd/src/socketcd.hpp>
 
-	using namespace NS_LIBSOCKET;
+	using namespace NS_SOCKETCD;
 
     int main(void)
     {
