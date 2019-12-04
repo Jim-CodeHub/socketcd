@@ -60,7 +60,7 @@ Note : the library will not install you computer directly
     }
 
 ###Command line
-    gcc app.c -lsocketcd -lpthread
+    g++ app.cpp -lsocketcd -lpthread
 
 ## Performence
 	TBD

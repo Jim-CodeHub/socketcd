@@ -1,16 +1,18 @@
 #-------------------------------------------------------------------------------------------------------
 #																									   #
-#								Makefile for libsocket source file 									   #
+#								Makefile for socketcd source file 									   #
 #																									   #
 #-------------------------------------------------------------------------------------------------------
 
 
-PROJECT				=   socketcd
+TARGET				=	socketcd
+PROJECT				=   lib$(TARGET)
 
 CXX					=	g++
 
 CXXFLAGS			=	-Werror -std=c++11
 CXXFLAGS   	       += 	-Wall
+CXXFLAGS   	       += 	-lpthread
 #CXXFLAGS			+=  -g
 
 SUBDIRS 			=   src/server src/client
@@ -27,7 +29,7 @@ export CXX CXXFLAGS CPLUS_INCLUDE_PATH
 #-------------------------------------------------------------------------------------------------------
 
 
-.PHONY: all clean install $(SUBDIRS)
+.PHONY: all clean install $(SUBDIRS) tst
 
 all:$(SUBDIRS)
 	ar -rcs $(PROJECT).a $(shell find ./src -name "*.o")
@@ -36,18 +38,16 @@ all:$(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@	
 
+tst:
+	$(MAKE) -C tst
+
 install:
 	@make
-	$(shell if [ ! -d socketcd ]; then `mkdir -p socketcd/src`; fi;)
-	$(shell cp -rf src/* ./socketcd/src )
-	@rm -rf socketcd/src/client/Makefile
-	@rm -rf socketcd/src/client/socketc.cpp
-	@rm -rf socketcd/src/client/socketc.o
-	@rm -rf socketcd/src/server/Makefile
-	@rm -rf socketcd/src/server/socketd.cpp
-	@rm -rf socketcd/src/server/socketd.o
-	@mv ./socketcd.a socketcd
-	@mv ./socketcd.so socketcd
+	$(shell if [ ! -d $(TARGET) ]; then `mkdir $(TARGET)`; fi;)
+	$(shell cp -rf src/* ./$(TARGET)/ )
+	@rm -rf `find ./$(TARGET) -name "*.o"`
+	@rm -rf `find ./$(TARGET) -name "*.cpp"`
+	@mv ./$(PROJECT).a ./$(PROJECT).so $(TARGET) 
 
 tags:
 	@rm -rf ./tags
