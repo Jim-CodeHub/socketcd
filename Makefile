@@ -47,6 +47,7 @@ install:
 	$(shell cp -rf src/* ./$(TARGET)/ )
 	@rm -rf `find ./$(TARGET) -name "*.o"`
 	@rm -rf `find ./$(TARGET) -name "*.cpp"`
+	@rm -rf `find ./$(TARGET) -name "Makefile"`
 	@mv ./$(PROJECT).a ./$(PROJECT).so $(TARGET) 
 
 tags:
