@@ -1,5 +1,5 @@
 #include <iostream>
-#include <socketcd/src/socketcd.hpp>
+#include <socketcd/socketcd.hpp>
 
 using namespace std;
 using namespace NS_SOCKETCD;

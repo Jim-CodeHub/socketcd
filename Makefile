@@ -8,18 +8,19 @@
 TARGET				=	socketcd
 PROJECT				=   lib$(TARGET)
 
+--PREFIX			=	./install
+
 CXX					=	g++
 
 CXXFLAGS			=	-Werror -std=c++11
 CXXFLAGS   	       += 	-Wall
 CXXFLAGS   	       += 	-lpthread
+CXXFLAGS		   +=   -I$(CURDIR)
 #CXXFLAGS			+=  -g
 
-SUBDIRS 			=   src/server src/client
+SUBDIRS 			=   $(TARGET)/server $(TARGET)/client
 
-CPLUS_INCLUDE_PATH = $(shell dirname `pwd`)
-
-export CXX CXXFLAGS CPLUS_INCLUDE_PATH
+export CXX CXXFLAGS
 
 
 #-------------------------------------------------------------------------------------------------------
@@ -32,8 +33,8 @@ export CXX CXXFLAGS CPLUS_INCLUDE_PATH
 .PHONY: all clean install $(SUBDIRS) tst
 
 all:$(SUBDIRS)
-	ar -rcs $(PROJECT).a $(shell find ./src -name "*.o")
-	$(CXX) -fPIC -shared $(shell find ./src -name "*.cpp") -o $(PROJECT).so
+	ar -rcs $(PROJECT).a $(shell find ./$(TARGET) -name "*.o")
+	$(CXX) -fPIC -shared $(shell find ./$(TARGET) -name "*.cpp") -I$(CURDIR) -o $(PROJECT).so
 
 $(SUBDIRS):
 	$(MAKE) -C $@	
@@ -42,13 +43,14 @@ tst:
 	$(MAKE) -C tst
 
 install:
-	@make
-	$(shell if [ ! -d $(TARGET) ]; then `mkdir $(TARGET)`; fi;)
-	$(shell cp -rf src/* ./$(TARGET)/ )
-	@rm -rf `find ./$(TARGET) -name "*.o"`
-	@rm -rf `find ./$(TARGET) -name "*.cpp"`
-	@rm -rf `find ./$(TARGET) -name "Makefile"`
-	@mv ./$(PROJECT).a ./$(PROJECT).so $(TARGET) 
+	$(shell if [ ! -d $(--PREFIX) ]; then mkdir $(--PREFIX); fi;)
+	$(shell if [ ! -d $(--PREFIX)/include ]; then mkdir $(--PREFIX)/include; fi;)
+	$(shell if [ ! -d $(--PREFIX)/lib ]; then mkdir $(--PREFIX)/lib; fi;)
+	@cp $(TARGET) $(--PREFIX)/include -rf
+	@mv ./$(PROJECT).a ./$(PROJECT).so $(--PREFIX)/lib 
+	rm -rf `find ./$(--PREFIX)/include -name "*.o"`
+	rm -rf `find ./$(--PREFIX)/include -name "*.cpp"`
+	rm -rf `find ./$(--PREFIX)/include -name "Makefile"`
 
 tags:
 	@rm -rf ./tags

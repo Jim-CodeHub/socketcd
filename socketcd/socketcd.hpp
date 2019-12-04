@@ -17,8 +17,8 @@
  *
  *------------------------------------------------------------------------------------------------------------------
 */
-#include <socketcd/src/client/socketc.hpp>
-#include <socketcd/src/server/socketd.hpp>
+#include <socketcd/client/socketc.hpp>
+#include <socketcd/server/socketd.hpp>
 
 
 #endif /*__SOCKETCD_H__*/

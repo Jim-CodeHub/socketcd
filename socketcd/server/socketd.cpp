@@ -6,7 +6,7 @@
  *------------------------------------------------------------------------------------------------------------------
 */
 
-#include <socketcd/src/server/socketd.hpp>
+#include <socketcd/server/socketd.hpp>
 
 
 using namespace NS_SOCKETCD;

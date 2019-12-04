@@ -32,7 +32,7 @@
 #include <cstdlib>
 #include <csignal>
 
-#include <socketcd/src/socket.hpp>
+#include <socketcd/socket.hpp>
 
 
 namespace NS_SOCKETCD{

@@ -16,7 +16,7 @@ Note : the library will not install you computer directly
 
 ###Server side
 
-    #include <socketcd/src/socketcd.hpp>
+    #include <socketcd/socketcd.hpp>
 
 	using namespace NS_SOCKETCD;
 
@@ -43,7 +43,7 @@ Note : the library will not install you computer directly
 
 ###Client side
 
-    #include <socketcd/src/socketcd.hpp>
+    #include <socketcd/socketcd.hpp>
 
 	using namespace NS_SOCKETCD;
 

@@ -23,7 +23,7 @@
 #include <sys/socket.h>
 #include <cstring>
 
-#include <socketcd/src/socket.hpp>
+#include <socketcd/socket.hpp>
 
 
 namespace NS_SOCKETCD{
