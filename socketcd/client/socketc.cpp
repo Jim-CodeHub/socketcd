@@ -57,7 +57,7 @@ socketc_client::socketc_client(enum TCP_IP_STACK _P)
 
 	socketfd = socket(domain, type, protocol);
 
-	if (-1 == socketfd) {throw "Socket create failure";}
+	if (-1 == socketfd){perror("Socket create failure");exit(-1);}
 }
 
 /**
@@ -75,7 +75,7 @@ void socketc_client::set_socket_opt(int level, int option, bool _switch)
 
 	ret = setsockopt(socketfd, level, option, &optval, sizeof(optval));
 
-	if (-1 == ret) {throw "Socket option set failure";}
+	if (-1 == ret) {perror("Socket option set failure"); exit(-1);}
 
 	return;
 }
@@ -96,7 +96,7 @@ void socketc_client::set_socket_opt(int level, int option, void *optval, socklen
 
 	ret = setsockopt(socketfd, level, option, optval, optlen);
 
-	if (-1 == ret) {throw "Socket option set failure";}
+	if (-1 == ret) {perror("Socket option set failure"); exit(-1);}
 
 	return;
 }
@@ -114,7 +114,7 @@ ssize_t socketc_client::data_recv(void *buff, size_t len, int flags)
 
 	size = recv(socketfd, buff, len, flags);
 
-	if (-1 == size) {throw "Data rcve error";}
+	if (-1 == size) {perror("Data rcve error"); exit(-1);}
 
 	return size;
 }
@@ -133,7 +133,7 @@ ssize_t socketc_client::data_send(void *data, size_t len, int flags)
 
 	size = send(socketfd, data, len, flags);
 
-	if (-1 == size) {throw "Data send error";}
+	if (-1 == size) {perror("Data send error"); exit(-1);}
 
 	return size;
 }
@@ -162,7 +162,7 @@ void socketc_tcp_v4::client_init(const char *ip, in_port_t port)
 
     ret = connect(socketfd, (struct sockaddr *)&caddr, sizeof(caddr));
 
-	if (-1 == ret) {throw "Socket client connect failure";}
+	if (-1 == ret) {perror("Socket client connect failure"); exit(-1);}
 
 	return;
 }

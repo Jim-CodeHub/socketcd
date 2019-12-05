@@ -21,7 +21,9 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <cstdio>
 #include <cstring>
+#include <cstdlib>
 
 #include <socketcd/socket.hpp>
 

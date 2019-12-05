@@ -31,6 +31,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <csignal>
+#include <cstdio>
 
 #include <socketcd/socket.hpp>
 

@@ -66,7 +66,7 @@ socketd_server::socketd_server(enum TCP_IP_STACK _P)
 
 	socketfd = socket(domain, type, protocol);
 
-	if (-1 == socketfd) {throw "Socket create failure";}
+	if (-1 == socketfd){perror("Socket create failure");exit(-1);}
 }
 
 /**
@@ -84,7 +84,7 @@ void socketd_server::set_socket_opt(int level, int option, bool _switch)
 
 	ret = setsockopt(socketfd, level, option, &optval, sizeof(optval));
 
-	if (-1 == ret) {throw "Socket option set failure";}
+	if (-1 == ret) {perror("Socket option set failure"); exit(-1);}
 
 	return;
 }
@@ -105,7 +105,7 @@ void socketd_server::set_socket_opt(int level, int option, void *optval, socklen
 
 	ret = setsockopt(socketfd, level, option, optval, optlen);
 
-	if (-1 == ret) {throw "Socket option set failure";}
+	if (-1 == ret) {perror("Socket option set failure"); exit(-1);}
 
 	return;
 }
@@ -124,7 +124,7 @@ void socketd_server::set_deamon(bool message)
 
 	ret = daemon(0, message);
 
-	if (-1 == ret) {throw "Socket deamon set failure";}
+	if (-1 == ret) {perror("Socket deamon set failure"); exit(-1);}
 
 	return;
 }
@@ -156,7 +156,7 @@ void socketd_tcp_v4::server_init(const char *ip, in_port_t port, CGI_T msg_cgi)
 
     ret = bind(socketfd, (struct sockaddr*)&saddr, sizeof(saddr)); 
 
-	if (-1 == ret) {throw "Socket server init failure";}
+	if (-1 == ret) {perror("Socket server init failure");exit(-1);}
 
 	this->msg_cgi = msg_cgi;
 
@@ -178,7 +178,7 @@ void socketd_tcp_v4::server_emit(enum method m, int backlog, nfds_t nfds)
 
 	ret = listen(socketfd, backlog); 
 
-	if (-1 == ret) {throw "Socket server emit failure";}
+	if (-1 == ret) {perror("Socket server emit failure"); exit(-1);}
 
 	this->nfds = nfds; /**< Only for xPOLL */
 
@@ -212,7 +212,7 @@ void socketd_tcp_v4::block(void)
     bzero(&caddr, len);
     cfd = accept(socketfd, (struct sockaddr*)&caddr, &len);
 
-	if (-1 == cfd) {throw "Socket server accept failure";}
+	if (-1 == cfd) {perror("Socket server accept failure"); exit(-1);}
 
     msg_cgi(cfd, &caddr);
 
@@ -240,7 +240,7 @@ void socketd_tcp_v4::ppc(void)
         bzero(&caddr, len);
         cfd = accept(socketfd, (struct sockaddr*)&caddr, &len);
 
-		if (-1 == cfd) {throw "Socket server accept failure";}
+		if (-1 == cfd) {perror("Socket server accept failure"); exit(-1);}
 
         signal(SIGCHLD, SIG_IGN);
 
@@ -282,7 +282,7 @@ void socketd_tcp_v4::tpc(void)
         bzero(&caddr, len);
         cfd = accept(socketfd, (struct sockaddr *)&caddr, &len);
 
-		if (-1 == cfd) {throw "Socket server accept failure";}
+		if (-1 == cfd) {perror("Socket server accept failure" ); exit(-1);}
 
         pthread_mutex_lock(&socketd_tcp_v4::mutex);
 
@@ -292,11 +292,11 @@ void socketd_tcp_v4::tpc(void)
 
         ret = pthread_create(&tid, NULL, thread_hook, &targs);
 
-		if (-1 == ret) {throw "Socket server pthread create failure";}
+		if (-1 == ret) {perror("Socket server pthread create failure"); exit(-1);}
 
         ret = pthread_detach(tid);
 
-		if (-1 == ret) {throw "Socket server pthread detach failure";}
+		if (-1 == ret) {perror("Socket server pthread detach failure"); exit(-1);}
     }
 
 	return;
@@ -335,14 +335,14 @@ void socketd_tcp_v4::select_tpc(void)
 
         ret = select(maxfd + 1, &tmp_set, NULL, NULL, NULL);
 
-		if (-1 == ret) {throw "Socket server select failure";}
+		if (-1 == ret) {perror("Socket server select failure"); exit(-1);}
 
         if(FD_ISSET(socketfd, &tmp_set))
         {
             bzero(&caddr, len);
             cfd = accept(socketfd, NULL, NULL);
 
-			if (-1 == cfd) {throw "Socket server accept failure";}
+			if (-1 == cfd) {perror("Socket server accept failure"); exit(-1);}
 
             FD_SET(cfd, &all_set);
 
@@ -378,7 +378,7 @@ void socketd_tcp_v4::select_tpc(void)
 
                     ret = getpeername(cfd, (struct sockaddr *)&caddr, &len);
 
-					if (-1 == ret) {throw "Socket server getpeername failure";}
+					if (-1 == ret) {perror("Socket server getpeername failure"); exit(-1);}
 
                     targs.msg_cgi = msg_cgi;
                     targs.caddr	  = caddr;
@@ -388,11 +388,11 @@ void socketd_tcp_v4::select_tpc(void)
 
                     ret = pthread_create(&tid, NULL, thread_hook, &targs);
 
-					if (-1 == ret) {throw "Socket server pthread create failure";}
+					if (-1 == ret) {perror("Socket server pthread create failure"); exit(-1);}
 
                     ret = pthread_detach(tid);
 
-					if (-1 == ret) {throw "Socket server pthread detach failure";}
+					if (-1 == ret) {perror("Socket server pthread detach failure"); exit(-1);}
                 }
             }
         }
@@ -431,14 +431,14 @@ void socketd_tcp_v4::poll_tpc(void)
     {
         ret = poll(pfd, maxnfd+1, -1);
 
-		if (-1 == ret) {throw "Socket server poll failure";}
+		if (-1 == ret) {perror("Socket server poll failure"); exit(-1);}
 
         if(pfd[0].revents & POLLIN)
         {
             bzero(&caddr, len);
             cfd = accept(socketfd, NULL, NULL); 
 
-			if (-1 == cfd) {throw "Socket server accept failure";}
+			if (-1 == cfd) {perror("Socket server accept failure"); exit(-1);}
 
             for(nfds_t i = 1; i < nfds; i++)
             {
@@ -466,7 +466,7 @@ void socketd_tcp_v4::poll_tpc(void)
 
                     ret = getpeername(cfd, (struct sockaddr *)&caddr, &len);
 
-					if (-1 == ret) {throw "Socket server getpeername failure";}
+					if (-1 == ret) {perror("Socket server getpeername failure"); exit(-1);}
 
                     targs.msg_cgi = msg_cgi;
                     targs.caddr	  = caddr;
@@ -477,11 +477,11 @@ void socketd_tcp_v4::poll_tpc(void)
 
                     ret = pthread_create(&tid, NULL, thread_hook, &targs);
 
-					if (-1 == ret) {throw "Socket server pthread create failure";}
+					if (-1 == ret) {perror("Socket server pthread create failure");exit(-1);}
 
                     ret = pthread_detach(tid);
 
-					if (-1 == ret) {throw "Socket server pthread detach failure";}
+					if (-1 == ret) {perror("Socket server pthread detach failure");exit(-1);}
                 }  
             }
         }
@@ -519,18 +519,18 @@ void socketd_tcp_v4::epoll_tpc(void)
 
     efd = epoll_create(1);
 
-	if (-1 == ret) {throw "Socket server epoll create failure";}
+	if (-1 == ret) {perror("Socket server epoll create failure"); exit(-1);}
 
     ret = epoll_ctl(efd, EPOLL_CTL_ADD, socketfd, &ev);
 
-	if (-1 == ret) {throw "Socket server epoll ctl failure";}
+	if (-1 == ret) {perror("Socket server epoll ctl failure"); exit(-1);}
 
     max_event = 1;
     while(true)
     {
         nfd = epoll_wait(efd, ea, max_event, -1); 
 
-		if (-1 == nfd) {throw "Socket server epoll wait failure";}
+		if (-1 == nfd) {perror("Socket server epoll wait failure"); exit(-1);}
 
         for(int i = 0; i < nfd; i++)
         {
@@ -538,14 +538,14 @@ void socketd_tcp_v4::epoll_tpc(void)
            {
                 cfd = accept(socketfd, NULL, NULL); 
 
-				if (-1 == cfd) {throw "Socket server accept failure";}
+				if (-1 == cfd) {perror("Socket server accept failure"); exit(-1);}
 
                 ev.events = EPOLLIN;
                 ev.data.fd = cfd;
 
                 ret = epoll_ctl(efd, EPOLL_CTL_ADD, cfd, &ev);
 
-			   if (-1 == ret) {throw "Socket server epoll ctl failure";}
+			   if (-1 == ret) {perror("Socket server epoll ctl failure"); exit(-1);}
 
                 max_event++;
            }
@@ -556,7 +556,7 @@ void socketd_tcp_v4::epoll_tpc(void)
                cfd = ea[i].data.fd;
                ret = getpeername(cfd, (struct sockaddr *)&caddr, &len);
 
-			   if (-1 == ret) {throw "Socket server getpeername failure";}
+			   if (-1 == ret) {perror("Socket server getpeername failure"); exit(-1);}
 
 			   targs.msg_cgi = msg_cgi;
 			   targs.caddr	 = caddr;
@@ -564,17 +564,17 @@ void socketd_tcp_v4::epoll_tpc(void)
 
                ret = epoll_ctl(efd, EPOLL_CTL_DEL, cfd, &ev); 
 
-			   if (-1 == ret) {throw "Socket server epoll ctl failure";}
+			   if (-1 == ret) {perror("Socket server epoll ctl failure"); exit(-1);}
 
                max_event--;
 
 			   ret = pthread_create(&tid, NULL, thread_hook, &targs);
 
-			   if (-1 == ret) {throw "Socket server pthread create failure";}
+			   if (-1 == ret) {perror("Socket server pthread create failure"); exit(-1);}
 
 			   ret = pthread_detach(tid);
 
-			   if (-1 == ret) {throw "Socket server pthread detach failure";}
+			   if (-1 == ret) {perror("Socket server pthread detach failure"); exit(-1);}
            }
         }
     }
