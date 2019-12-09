@@ -32,9 +32,12 @@
 #include <cstdlib>
 #include <csignal>
 #include <cstdio>
+#include <functional>
 
 #include <socketcd/socket.hpp>
 
+
+using namespace std;
 
 namespace NS_SOCKETCD{
 
@@ -54,7 +57,7 @@ namespace NS_SOCKETCD{
  *-----------------------------------------------------------------------------------------------------------------
 */
 
-typedef void (*CGI_T)(int cfd, const struct sockaddr_in *caddr);
+typedef std::function<void(int, const struct sockaddr_in *)> CGI_T;
 
 /**
  *	@brief Socket server implement method 
@@ -67,7 +70,7 @@ enum method{
  *	@brief Socket server arguments of TPCs
  **/
 struct thread_args{
-	void (*msg_cgi)(int cfd, const struct sockaddr_in *caddr);
+	CGI_T msg_cgi;
     int cfd;
     struct sockaddr_in caddr;
 };
