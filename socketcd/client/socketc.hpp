@@ -51,13 +51,16 @@ namespace NS_SOCKETCD{
  **/
 class socketc_client{
 	public:
-		socketc_client(enum TCP_IP_STACK _P = TCPv4);
+		socketc_client(enum TCP_IP_STACK _P = TCPv4								   );
 
-		void set_socket_opt(int level, int option, bool _switch);
-		void set_socket_opt(int level, int option, void *optval, socklen_t optlen);
+		void set_socket_opt(int level, int option, bool _switch					   );
+		void set_socket_opt(int level, int option, void *optval, socklen_t optlen  );
 
-		ssize_t data_recv(void *data, size_t len, int flags);	
-		ssize_t data_send(void *data, size_t len, int flags);
+		void get_socket_opt(int level, int optname, void *optval, socklen_t *optlen);
+
+		ssize_t data_recv(void *data, size_t len								   );
+		ssize_t data_recv(void *data, size_t len, int flags						   );	
+		ssize_t data_send(void *data, size_t len, int flags						   );
 
 		//getaddrinfo TBD
 
@@ -70,11 +73,11 @@ class socketc_client{
  **/
 class socketc_tcp_v4 : public socketc_client{
 	public:
-		socketc_tcp_v4(void):socketc_client(TCPv4){};
+		socketc_tcp_v4(void):socketc_client(TCPv4){}								;
 
-		void client_init(const char *ip, in_port_t port);
+		void client_init(const char *ip, in_port_t port							   );
 		//void client_emit(void);
-		//void client_over(void);
+		void client_over(void													   );
 
 	private:
 		struct sockaddr_in caddr;

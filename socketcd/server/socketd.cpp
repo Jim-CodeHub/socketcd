@@ -111,6 +111,27 @@ void socketd_server::set_socket_opt(int level, int option, void *optval, socklen
 }
 
 /**
+ *	@brief	    Get TCP/IP socket options
+ *	@param[in]  level	-	SOCKETCD_LEVEL_XXX 
+ *	@param[in]  option  -	SOCKETCD_OPT_XXX
+ *	@param[in]  optval	-   option value
+ *	@param[in]  optlen	-   option value length	
+ *	@param[out] None
+ *	@return		None
+ *	@note		The function suitable the option which value is structure 
+ **/
+void socketd_server::get_socket_opt(int level, int optname, void *optval, socklen_t *optlen)
+{
+	int ret = 0;
+
+	ret = getsockopt(socketfd, level, optname, optval, optlen);
+
+	if (-1 == ret) {perror("Socket option get failure"); exit(-1);}
+
+	return;
+}
+
+/**
  *	@brief	    Set TCP/IP socket deamon 
  *	@param[in]  message - true/false 
  *	@param[out] None
@@ -128,6 +149,77 @@ void socketd_server::set_deamon(bool message)
 
 	return;
 }
+
+/**
+ *	@brief	    Recive data from client socket
+ *	@param[in]  socketfd - client socket file descriptor 
+ *	@param[in]  len	     - data buffer length 
+ *	@param[in]  flags    - SOCKETCD_RECV_MSG_XXX or 0 
+ *	@param[out] None 
+ *	@return		Bytes length of data/0 when no data	or peer has been over
+ *	@note		1. The function is in blocking mode, and perform a loop style while recive 
+ *				2. READ END will be SHUT DOWN after recive 
+ **/
+ssize_t socketd_server::data_recv(int socketfd, void *buff, size_t len)
+{
+	ssize_t size = 0, recv_byte = 0;
+
+	char *p = (char *)buff;
+
+	while ((recv_byte = ::recv(socketfd, p, len, 0)) > 0)
+	{
+		size += recv_byte; p += recv_byte;
+	}
+
+	if (-1 == recv_byte) {perror("Data recive error"); exit(-1);}
+
+	::shutdown(socketfd, SHUT_RD);
+
+	return size;
+}
+
+/**
+ *	@brief	    Recive data from client socket
+ *	@param[in]  socketfd - client socket file descriptor 
+ *	@param[in]  len		 - data buffer length 
+ *	@param[in]  flags	 - SOCKETCD_RECV_MSG_XXX or 0 
+ *	@param[out] None 
+ *	@return		Bytes length of data/0 when no data	or peer has been over
+ **/
+ssize_t socketd_server::data_recv(int socketfd, void *buff, size_t len, int flags)
+{
+	ssize_t size = -1;
+
+	size = ::recv(socketfd, buff, len, flags);
+
+	if (-1 == size) {perror("Data recive error"); exit(-1);}
+
+	return size;
+}
+
+/**
+ *	@brief	    Send data into client socket
+ *	@param[in]  socketfd - client socket file descriptor 
+ *	@param[in]  data 
+ *	@param[in]  len	   - data length 
+ *	@param[in]  flags  - SOCKETCD_SEND_MSG_XXX or 0 
+ *	@param[out] None
+ *	@return		Bytes length of data
+ *	@note		WRITE END will be SHUT DOWN after send
+ **/
+ssize_t socketd_server::data_send(int socketfd, void *data, size_t len, int flags)
+{
+	ssize_t size = -1;
+
+	size = send(socketfd, data, len, flags);
+
+	::shutdown(socketfd, SHUT_WR);
+
+	if (-1 == size) {perror("Data send error"); exit(-1);}
+
+	return size;
+}
+
 
 /*
 --------------------------------------------------------------------------------------------------------------------
@@ -601,5 +693,16 @@ void *socketd_tcp_v4::thread_hook(void *arg)
     close(targs.cfd);
 
     pthread_exit(NULL);
+}
+
+/**
+ *	@brief	    Close server socket file descriptor 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		None
+ **/
+void socketd_tcp_v4::server_over(void)
+{
+	close(socketfd);
 }
 

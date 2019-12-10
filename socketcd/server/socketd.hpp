@@ -80,12 +80,18 @@ struct thread_args{
  **/
 class socketd_server{
 	public:
-		socketd_server(enum TCP_IP_STACK _P = TCPv4);
+		socketd_server(enum TCP_IP_STACK _P = TCPv4								   );
 
-		void set_socket_opt(int level, int option, bool _switch);
-		void set_socket_opt(int level, int option, void *optval, socklen_t optlen);
+		void set_socket_opt(int level, int option, bool _switch					   );
+		void set_socket_opt(int level, int option, void *optval, socklen_t optlen  );
 
-		void set_deamon(bool message);
+		void get_socket_opt(int level, int optname, void *optval, socklen_t *optlen);
+
+		void set_deamon(bool message											   );
+
+		ssize_t data_send(int socketfd, void *data, size_t len, int flags		   );
+		ssize_t data_recv(int socketfd, void *buff, size_t len, int flags		   );
+		ssize_t data_recv(int socketfd, void *buff, size_t len					   );
 
 	protected:
 		int socketfd;
@@ -96,14 +102,14 @@ class socketd_server{
  **/
 class socketd_tcp_v4 : public socketd_server{
 	public:
-		socketd_tcp_v4(void):socketd_server(TCPv4){};
+		socketd_tcp_v4(void):socketd_server(TCPv4){}								;
 
-		void server_init(const char *ip, in_port_t port, CGI_T msg_cgi  );
-		void server_emit(enum method m, int backlog=128, nfds_t nfds=128);
-		//void server_over(void);
+		void server_init(const char *ip, in_port_t port, CGI_T msg_cgi			   );
+		void server_emit(enum method m, int backlog=128, nfds_t nfds=128		   );
+		void server_over(void													   );
 
-		static pthread_mutex_t mutex;
-		static void *thread_hook(void *arg);
+		static pthread_mutex_t mutex												;
+		static void *thread_hook(void *arg										   );
 
 	private:
 		struct sockaddr_in saddr;
