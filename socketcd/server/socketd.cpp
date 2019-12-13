@@ -363,7 +363,7 @@ void socketd_tcp_v4::tpc(void)
     int				   ret = 0;
 	int				   cfd;
     socklen_t		   len;
-    pthread_t		   tid;
+    pthread_t		   tid; /**< Declare sub thread id */
     struct thread_args targs;
     struct sockaddr_in caddr;
 
@@ -409,7 +409,7 @@ void socketd_tcp_v4::select_tpc(void)
     fd_set			   tmp_set;
 	fd_set			   all_set;
     socklen_t		   len;
-    pthread_t		   tid;
+    pthread_t		   tid; /**< Declare sub thread id */
     struct thread_args targs;
     struct sockaddr_in caddr;
 
@@ -506,7 +506,7 @@ void socketd_tcp_v4::poll_tpc(void)
     int				   ret = 0;
 	int				   cfd;
     socklen_t		   len;
-    pthread_t		   tid;
+    pthread_t		   tid; /**< Declare sub thread id */
     nfds_t		       maxnfd = 0;
     nfds_t			   countfd = 0;
     struct pollfd	   pfd[nfds];
@@ -598,7 +598,7 @@ void socketd_tcp_v4::epoll_tpc(void)
 	int				   nfd;
 	int				   max_event;
     socklen_t		   len;
-    pthread_t		   tid;
+    pthread_t		   tid; /**< Declare sub thread id */
     struct epoll_event ev;
     struct epoll_event ea[nfds];
     struct thread_args targs;
@@ -681,6 +681,8 @@ void socketd_tcp_v4::epoll_tpc(void)
  *	@param[in]  None 
  *	@param[out] None
  *	@return		None
+ *	@note		!!! HEAP SOURCE ARE SHARED BY ALL THREAD, TO RELEASE IT
+ *					BEFORE 'msg_cgi()' TERMINATED
  **/
 void *socketd_tcp_v4::thread_hook(void *arg)
 {
