@@ -136,7 +136,7 @@ void socketd_server::get_socket_opt(int level, int optname, void *optval, sockle
  *	@param[in]  message - true/false 
  *	@param[out] None
  *	@return		None
- *	@note	    If param message is false, exception message will still work on currunt terminal	
+ *	@note	    If param message is true, exception message will still work on currunt terminal	
  *				, which is helpful for debugging
  **/
 void socketd_server::set_deamon(bool message)
