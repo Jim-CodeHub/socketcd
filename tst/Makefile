@@ -1,5 +1,5 @@
 
-OBJS    = client server
+OBJS    = client server url
 SUBDIRS = 
 NAMEDIR = $(shell dirname `pwd`)
  
