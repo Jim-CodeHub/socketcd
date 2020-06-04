@@ -7,7 +7,7 @@ using namespace NS_SOCKETCD;
 
 int main(void)
 {
-	class URL_Parser URL("www.baidu.com");
+	class URL_Parser URL("https://www.baidu.com/asdf");
 
 	string			Hostname = URL.getHostName();
 	int				AddrType = URL.getAddrType();

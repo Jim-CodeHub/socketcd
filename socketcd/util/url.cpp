@@ -25,14 +25,24 @@ using namespace NS_SOCKETCD;
 */
 
 /**
- *	@brief	    Create TCP/IP socket 
- *	@param[in]  _P	- TCP/IP stack protocol 
+ *	@brief	    Parse URL 
+ *	@param[in]  URL 
  *	@param[out] None
  *	@return		None
  **/
 URL_Parser::URL_Parser( const char *URL )
 {
-	hptr = gethostbyname( URL );
+	string url = URL;
+
+	string::size_type pos = url.find("://");
+
+	if ( pos != string::npos ) { url = url.substr( pos + 3); }
+
+	pos = url.find("/"); /**< Maybe npos. */
+
+	HOST = url.substr( 0, pos );
+
+	hptr = gethostbyname( HOST.c_str() );
 
 	if ( NULL == hptr ) { herror("gethostbyname error : "); exit(-1); }
 }
@@ -43,7 +53,18 @@ URL_Parser::URL_Parser( const char *URL )
  *	@param[out] None
  *	@return		Host name	
  **/
-const char *	URL_Parser::getHostName( void )
+string			URL_Parser::getHostName( void )
+{
+	return this->HOST;
+}
+
+/**
+ *	@brief	    Get the official host name 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		Official host name	
+ **/
+const char *	URL_Parser::getOfclName( void )
 {
 	return hptr->h_name;
 }
