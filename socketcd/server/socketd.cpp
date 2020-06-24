@@ -132,20 +132,20 @@ void socketd_server::get_socket_opt(int level, int optname, void *optval, sockle
 }
 
 /**
- *	@brief	    Set TCP/IP socket deamon 
+ *	@brief	    Set TCP/IP socket daemon 
  *	@param[in]  message - true/false 
  *	@param[out] None
  *	@return		None
  *	@note	    If param message is true, exception message will still work on currunt terminal	
  *				, which is helpful for debugging
  **/
-void socketd_server::set_deamon(bool message)
+void socketd_server::set_daemon(bool message)
 {
 	int ret = 0;
 
 	ret = daemon(0, message);
 
-	if (-1 == ret) {perror("Socket deamon set failure"); exit(-1);}
+	if (-1 == ret) {perror("Socket daemon set failure"); exit(-1);}
 
 	return;
 }

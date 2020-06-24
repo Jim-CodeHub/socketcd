@@ -87,7 +87,7 @@ class socketd_server{
 
 		void get_socket_opt(int level, int optname, void *optval, socklen_t *optlen);
 
-		void set_deamon(bool message											   );
+		void set_daemon(bool message											   );
 
 		ssize_t data_send(int socketfd, void *data, size_t len, int flags		   );
 		ssize_t data_recv(int socketfd, void *buff, size_t len, int flags		   );
