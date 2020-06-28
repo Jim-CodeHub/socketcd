@@ -9,7 +9,7 @@ int main(void)
 	try{
 		socketc_tcp_v4 TCP;
 
-		TCP.client_init("192.168.3.12", 80);
+		TCP.client_init("127.0.0.1", 80);
 
 		/* MESSAGE HANDLER BELOW */
 

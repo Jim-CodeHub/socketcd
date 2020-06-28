@@ -25,7 +25,10 @@ int main(void)
 		socketd_tcp_v4 TCP;
 
 		TCP.server_init("127.0.0.1", 80, msg_cgi);
-		TCP.server_emit(BLOCK);
+		//TCP.server_emit(BLOCK);
+		//TCP.server_emit(PPC);
+		//TCP.server_emit(POLL_TPC);
+		TCP.server_emit(EPOLL_TPC);
 	}
 	catch(const char *str)
 	{
