@@ -201,22 +201,16 @@ ssize_t socketc_client::data_send(void *data, size_t len, int flags)
  *	@param[in]  ip 
  *	@param[in]  port - Application layer protocol port 
  *	@param[out] None
- *	@return		None
+ *	@return		Standard sockect connect error
  **/
-void socketc_tcp_v4::client_init(const char *ip, in_port_t port)
+int socketc_tcp_v4::client_init(const char *ip, in_port_t port)
 {
-	int ret = 0;
-
     caddr.sin_family	  = AF_INET;
     caddr.sin_addr.s_addr = inet_addr(ip);
     caddr.sin_port		  = htons(port);
     bzero(caddr.sin_zero, sizeof(caddr.sin_zero));
 
-    ret = connect(socketfd, (struct sockaddr *)&caddr, sizeof(caddr));
-
-	if (-1 == ret) {perror("Socket client connect failure"); exit(-1);}
-
-	return;
+    return connect(socketfd, (struct sockaddr *)&caddr, sizeof(caddr));
 }
 
 /**

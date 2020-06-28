@@ -7,7 +7,7 @@
 
 TARGET				=	socketcd
 PROJECT				=   lib$(TARGET)
-VERSION				=	0.2
+VERSION				=	0.3
 
 --PREFIX			=	./install
 

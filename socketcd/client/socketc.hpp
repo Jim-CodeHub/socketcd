@@ -73,11 +73,12 @@ class socketc_client{
  **/
 class socketc_tcp_v4 : public socketc_client{
 	public:
-		socketc_tcp_v4(void):socketc_client(TCPv4){}								;
+		socketc_tcp_v4( void ):socketc_client(TCPv4){}								;
 
-		void client_init(const char *ip, in_port_t port							   );
+		int  client_init( const char *ip, in_port_t port						   );
+
 		//void client_emit(void);
-		void client_over(void													   );
+		void client_over( void													   );
 
 	private:
 		struct sockaddr_in caddr;

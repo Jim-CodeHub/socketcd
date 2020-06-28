@@ -9,7 +9,29 @@ int main(void)
 	try{
 		socketc_tcp_v4 TCP;
 
-		TCP.client_init("127.0.0.1", 80);
+		int cErr = TCP.client_init("127.0.0.1", 80);
+
+		switch ( cErr ) /**< Client connect error */
+		{
+			case ENETUNREACH : 
+				cout << "Network is unreachable" << endl;
+				exit(-1);
+				break;
+			case ETIMEDOUT	 :
+				cout << "Timeout while attempting connection" << endl;
+				exit(-1);
+				break;
+			case ECONNREFUSED:
+				cout << "Connect refused" << endl;
+				exit(-1);
+				break;
+
+				/**< MAY BE SOME HANDLER FOR UPON ERRORS, INSTEAD OF 'exit()'. */
+
+			default: 
+				cout << "sockect bind error" <<endl;
+				exit(-1);
+		}
 
 		/* MESSAGE HANDLER BELOW */
 
