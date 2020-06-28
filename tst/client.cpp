@@ -28,9 +28,11 @@ int main(void)
 
 				/**< MAY BE SOME HANDLER FOR UPON ERRORS, INSTEAD OF 'exit()'. */
 
-			default: 
+			case -1:
 				cout << "sockect bind error" <<endl;
 				exit(-1);
+
+			default:; 
 		}
 
 		/* MESSAGE HANDLER BELOW */
