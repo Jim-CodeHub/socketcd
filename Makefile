@@ -7,7 +7,7 @@
 
 TARGET				=	socketcd
 PROJECT				=   lib$(TARGET)
-VERSION				=	0.3
+VERSION				=	0.4
 
 --PREFIX			=	./install
 
@@ -31,7 +31,7 @@ export CXX CXXFLAGS
 #-------------------------------------------------------------------------------------------------------
 
 
-.PHONY: all clean install $(SUBDIRS) tst
+.PHONY: all clean install $(SUBDIRS) demo 
 
 all:$(SUBDIRS)
 	ar -rcs $(PROJECT).a $(shell find ./$(TARGET) -name "*.o")
@@ -41,8 +41,8 @@ all:$(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@	
 
-tst:
-	$(MAKE) -C tst
+demo:
+	$(MAKE) -C demo 
 
 install:
 	$(shell if [ ! -d $(--PREFIX) ]; then mkdir $(--PREFIX); fi;)

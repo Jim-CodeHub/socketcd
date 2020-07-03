@@ -43,6 +43,7 @@ class URL_Parser{
 		URL_Parser( const char *URL		);
 
 		string			getHostName(void);
+		int				getPort	   (void);
 		const char *	getOfclName(void);
 		int				getAddrType(void);
 		list<string>	getAliaList(void);
@@ -51,6 +52,7 @@ class URL_Parser{
 		~URL_Parser(){ delete [] ipvx;	};
 
 	private:
+		int				PORT;
 		string			HOST;
 		char		   *ipvx = new char [INET6_ADDRSTRLEN];
 		struct hostent *hptr = NULL;

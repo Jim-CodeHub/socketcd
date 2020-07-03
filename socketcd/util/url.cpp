@@ -29,22 +29,37 @@ using namespace NS_SOCKETCD;
  *	@param[in]  URL 
  *	@param[out] None
  *	@return		None
+ *	@note		exception : const char * 'gethostbyname' error 
  **/
 URL_Parser::URL_Parser( const char *URL )
 {
 	string url = URL;
 
-	string::size_type pos = url.find("://");
+	/**< eg : https://www.dumor.cn:80/index.aspx */
 
-	if ( pos != string::npos ) { url = url.substr( pos + 3); }
+	string::size_type pos_start = url.find("://");
 
-	pos = url.find("/"); /**< Maybe npos. */
+	if ( pos_start != string::npos ) { url = url.substr( pos_start + 3); }
 
-	HOST = url.substr( 0, pos );
+
+	/**< eg : www.dumor.cn:80/index.aspx		 */
+
+	string::size_type pos_slash = url.find( "/" );
+
+	url = url.substr( 0, pos_slash );
+
+
+	/**< eg : www.dumor.cn:80					 */
+
+	string::size_type pos_ports = url.find( ":" );
+
+	this->PORT = (pos_ports != string::npos)?(atoi(url.substr(pos_ports + 1).c_str())):-1;
+	this->HOST = url.substr( 0, pos_ports ); 
+
 
 	hptr = gethostbyname( HOST.c_str() );
 
-	if ( NULL == hptr ) { herror("gethostbyname error : "); exit(-1); }
+	if ( NULL == hptr ) { throw( hstrerror(h_errno) ); }
 }
 
 /**
@@ -56,6 +71,17 @@ URL_Parser::URL_Parser( const char *URL )
 string			URL_Parser::getHostName( void )
 {
 	return this->HOST;
+}
+
+/**
+ *	@brief	    Get the port number
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		Port number or -1 (port is not exist) 
+ **/
+int				URL_Parser::getPort	   ( void )
+{
+	return this->PORT; 
 }
 
 /**
