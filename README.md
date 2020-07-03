@@ -8,14 +8,15 @@ Note : the library will not install you computer directly
 	   , instead, socketcd directory will be created, and the following is up to you 
 
 ## Note
-* Client behavior is implementation dependent in function msg_cgi(). 
 
+* Client behavior is implementation dependent in function msg_cgi(). 
 * Administrator privileges must be used 
 
 ## Demo
 
-###Server side
+### Server side
 
+```C++
     #include <socketcd/socketcd.hpp>
 
 	using namespace NS_SOCKETCD;
@@ -39,10 +40,11 @@ Note : the library will not install you computer directly
 
         return 0;
     }
+```
 
+### Client side
 
-###Client side
-
+```C++
     #include <socketcd/socketcd.hpp>
 
 	using namespace NS_SOCKETCD;
@@ -58,9 +60,14 @@ Note : the library will not install you computer directly
 
         return 0;
     }
+```
 
-###Command line
-    g++ app.cpp -lsocketcd -lpthread
+### Command line
+
+```C++
+    $ g++ app.cpp -lsocketcd -lpthread
+	$ sudo ./a.out
+```
 
 ## Performence
 	TBD
