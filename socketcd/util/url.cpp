@@ -33,13 +33,19 @@ using namespace NS_SOCKETCD;
  **/
 URL_Parser::URL_Parser( const char *URL )
 {
-	string url = URL;
+	string		url = URL;
+
+	this->Protocol	= "" ;
 
 	/**< eg : https://www.dumor.cn:80/index.aspx */
 
 	string::size_type pos_start = url.find("://");
 
-	if ( pos_start != string::npos ) { url = url.substr( pos_start + 3); }
+	if ( pos_start != string::npos ) 
+	{ 
+		this->Protocol	= url.substr( 0, pos_start );
+		url				= url.substr( pos_start + 3); 
+	}
 
 
 	/**< eg : www.dumor.cn:80/index.aspx		 */
@@ -60,6 +66,17 @@ URL_Parser::URL_Parser( const char *URL )
 	hptr = gethostbyname( HOST.c_str() );
 
 	if ( NULL == hptr ) { throw( hstrerror(h_errno) ); }
+}
+
+/**
+ *	@brief	    Get protocol 
+ *	@param[in]  None 
+ *	@param[out] None
+ *	@return		Protocol	
+ **/
+string			URL_Parser::getProtocol( void )
+{
+	return this->Protocol;
 }
 
 /**

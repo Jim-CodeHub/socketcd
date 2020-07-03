@@ -7,6 +7,7 @@ using namespace NS_SOCKETCD;
 
 int main(void)
 {
+	string			Protocol;
 	int				Port	; 
 	string			Hostname;
 	int				AddrType;
@@ -18,6 +19,7 @@ int main(void)
 		//class URL_Parser URL("http://www.dumor.cn:80/index.aspx");
 		class URL_Parser URL("http://www.dumor.cn/index.aspx");
 
+		Protocol = URL.getProtocol();
 		Port	 = URL.getPort	  ();
 		Hostname = URL.getHostName();
 		AddrType = URL.getAddrType();
@@ -30,8 +32,9 @@ int main(void)
 		cout << err << endl;
 	}
 
-	cout << "Port number:" << Port << endl;
-	cout << "Host Name  :" << Hostname << endl;
+	cout << "Protocol   :" << Protocol									   << endl;
+	cout << "Port number:" << Port										   << endl;
+	cout << "Host Name  :" << Hostname									   << endl;
 	cout << "Addr Type  :" << ((AddrType == AF_INET)?"AF_INET":"AF_INET6") << endl;
 
 	for ( list<string>::iterator _big = AliaList.begin(), _end = AliaList.end(); _big != _end; _big++ )
