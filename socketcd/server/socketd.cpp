@@ -154,7 +154,6 @@ void socketd_server::set_daemon(bool message)
  *	@brief	    Recive data from client socket
  *	@param[in]  socketfd - client socket file descriptor 
  *	@param[in]  len	     - data buffer length 
- *	@param[in]  flags    - SOCKETCD_RECV_MSG_XXX or 0 
  *	@param[out] None 
  *	@return		Bytes length of data/0 when no data	or peer has been over
  *	@note		1. The function is in blocking mode, and perform a loop style while recive 
